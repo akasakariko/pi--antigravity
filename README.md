@@ -13,12 +13,12 @@
 
 ## 主な特徴
 
-- 🚀 **最新の Gemini 3.8 Flash 対応**: Low、Medium、High（動的思考）の各思考モードをサポート。
-- ⚡ **超低レイテンシ (Fast TTFT)**: Keep-Alive 接続プールの再利用と TLS プリウォーミングにより、初回および継続ターンの応答速度を最大化。
-- 🔒 **安全な OAuth 2.0 認証**: PKCE 対応認可フローを採用。トークンはローカル（`~/.pi/agent/auth.json`）でのみ安全に保管・自動更新されます。
-- 🧩 **マルチモデル対応**: Gemini 各世代に加え、Cloud Code Assist カタログ上の Claude 4.6 (Sonnet/Opus) や GPT-OSS も単一プロバイダー経由で利用可能。
-- 📊 **クォータ診断機能**: `/antigravity.usage` や `/antigravity.doctor` で共有利用枠の残りや直近のリクエスト状態を即座に確認可能。
-- 🎨 **画像生成サポート**: `/antigravity.image` コマンドおよびエージェント向け画像生成ツール内蔵。
+- **最新の Gemini 3.8 Flash 対応**: Low、Medium、High（動的思考）の各思考モードをサポート。
+- **超低レイテンシ (Fast TTFT)**: Keep-Alive 接続プールの再利用と TLS プリウォーミングにより、初回および継続ターンの応答速度を最大化。
+- **安全な OAuth 2.0 認証**: PKCE 対応認可フローを採用。トークンはローカル（`~/.pi/agent/auth.json`）でのみ安全に保管・自動更新されます。
+- **マルチモデル対応**: Gemini 各世代に加え、Cloud Code Assist カタログ上の Claude 4.6 (Sonnet/Opus) や GPT-OSS も単一プロバイダー経由で利用可能。
+- **クォータ診断機能**: `/antigravity.usage` や `/antigravity.doctor` で共有利用枠の残りや直近のリクエスト状態を即座に確認可能。
+- **画像生成サポート**: `/antigravity.image` コマンドおよびエージェント向け画像生成ツール内蔵。
 
 ---
 
