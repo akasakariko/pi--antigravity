@@ -3,118 +3,126 @@
 [![npm version](https://img.shields.io/npm/v/pi-antigravity?logo=npm)](https://www.npmjs.com/package/pi-antigravity)
 [![license](https://img.shields.io/npm/l/pi-antigravity)](LICENSE)
 
-**pi-antigravity** is a [Pi Coding Agent](https://pi.dev) provider that lets Pi talk directly to Google Antigravity / Cloud Code Assist models — Gemini, plus the Claude and GPT-OSS models Antigravity also advertises. Sign in with Google, pick a model, and go. Under the hood it handles OAuth login, native streaming, model routing, and quota diagnostics itself, so it never shells out to an external Antigravity CLI.
+**pi-antigravity** は、[Pi Coding Agent](https://pi.dev) が Google Antigravity / Cloud Code Assist のモデル（Gemini、および Antigravity 経由で提供される Claude や GPT-OSS モデル）と直接連携できるようにするプロバイダー拡張機能です。Google アカウントでログインし、モデルを選択するだけですぐに利用できます。OAuth 認証、ネイティブストリーミング、モデルルーティング、クォータ診断をすべて内部で処理するため、外部の Antigravity CLI プロセスを別途呼び出す必要はありません。
 
-> **Unofficial integration.** This project is not affiliated with or endorsed by Google. Use it only with an account and services you are authorized to access, and review its source before granting OAuth permissions.
+> **非公式統合:** 本プロジェクトは Google と提携しておらず、公式の推奨を受けたものでもありません。自身がアクセス権限を持つアカウントおよびサービスでのみ使用し、OAuth 権限を付与する前にソースコードをご確認ください。
 
-## Contents
+## 目次
 
-- [Requirements](#requirements)
-- [Install](#install)
-- [Quick start](#quick-start)
-- [Authentication and credential safety](#authentication-and-credential-safety)
-- [Commands](#commands)
-- [Models and routing](#models-and-routing)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
-- [Development](#development)
+- [動作要件](#動作要件)
+- [インストール](#インストール)
+- [クイックスタート](#クイックスタート)
+- [認証とセキュリティ](#認証とセキュリティ)
+- [コマンド一覧](#コマンド一覧)
+- [モデルとルーティング](#モデルとルーティング)
+- [環境設定](#環境設定)
+- [トラブルシューティング](#トラブルシューティング)
+- [開発・コントリビューション](#開発コントリビューション)
+- [友情リンク](#友情リンク)
+- [ライセンス](#ライセンス)
 
-## Requirements
+## 動作要件
 
-- Pi Coding Agent and Pi AI version **0.80.0 or later**
-- A Google account that can use the relevant Cloud Code Assist / Antigravity services
-- A browser to complete the Google sign-in. Same-machine is best (the browser hits the local callback automatically); on a remote/headless machine, complete sign-in anywhere and paste the resulting callback URL back into Pi (see [Troubleshooting](#troubleshooting)).
+- Pi Coding Agent および Pi AI バージョン **0.80.0 以降**
+- 関連する Cloud Code Assist / Antigravity サービスを利用可能な Google アカウント
+- Google サインインを完了するためのブラウザ（同一マシン上のブラウザを推奨。リモート/ヘッドレス環境の場合は、任意の環境でサインインを完了し、コールバック URL を Pi に貼り付けます。詳細は [トラブルシューティング](#トラブルシューティング) を参照）。
 
-## Install
+## インストール
 
-Install from npm:
+npm からインストールする場合:
 
 ```bash
 pi install npm:pi-antigravity
 ```
 
-Or install the latest repository version:
+GitHub リポジトリから最新版をインストールする場合:
 
 ```bash
-pi install git:github.com/Rahularya01/pi-antigravity
+pi install git:github.com/KayanoLiam/pi--antigravity
 ```
 
-Restart Pi (or run `/reload`) after installation. To update the npm package later, use `pi update npm:pi-antigravity`.
+ローカルソースコードから直接リンクしてインストールする場合（開発・カスタマイズ用）:
 
-## Quick start
+```bash
+pi install /path/to/pi-antigravity
+```
 
-1. Start Pi and run `/login antigravity`.
-2. Complete Google sign-in in your browser.
-3. Select a model, for example:
+インストール後は Pi を再起動（または `/reload` を実行）してください。パッケージを後から更新する場合は `pi update git:github.com/KayanoLiam/pi--antigravity` を使用します。
+
+## クイックスタート
+
+1. Pi を起動し、`/login antigravity` を実行します。
+2. ブラウザが自動的に開くので、Google アカウントでサインインを完了します。
+3. モデルを選択します（例: Gemini 3.8 Flash）:
 
    ```text
-   /model antigravity/gemini-3.7-flash
+   /model antigravity/gemini-3.8-flash
    ```
 
-4. Start working. If a request fails, run `/antigravity.doctor` for sanitized diagnostics.
+4. これで利用準備は完了です。リクエストで問題が発生した場合は、`/antigravity.doctor` を実行して診断情報を確認できます。
 
-## Authentication and credential safety
+## 認証とセキュリティ
 
-The provider uses the OAuth 2.0 Authorization Code flow with PKCE, so credentials are only ever exchanged with Google — never typed into Pi.
+本プロバイダーは PKCE 対応の OAuth 2.0 認可コードフロー（Authorization Code flow with PKCE）を採用しており、認証情報は Google との間でのみ直接やり取りされます（Pi にパスワードを入力する必要はありません）。
 
-1. `/login antigravity` opens Google sign-in and starts a temporary callback listener at `http://localhost:51121/oauth-callback`.
-2. After you approve access, Pi exchanges the callback code for tokens and stores the provider credentials in Pi's auth store (normally `~/.pi/agent/auth.json`).
-3. Pi refreshes access tokens automatically when they expire — you shouldn't need to sign in again unless a token is revoked.
+1. `/login antigravity` を実行するとブラウザで Google サインイン画面が開き、ローカルの一時コールバックリスナー（`http://localhost:51121/oauth-callback`）が起動します。
+2. アクセスを承認すると、Pi は認可コードをトークンと交換し、Pi の認証情報ストア（通常は `~/.pi/agent/auth.json`）に保存します。
+3. アクセストークンの有効期限が切れると自動的にリフレッシュされます（トークンが明示的に取り消されない限り、再ログインは不要です）。
 
-The callback listener binds only to a loopback host, so it isn't reachable from outside your machine. The auth file it writes to contains sensitive access and refresh tokens: **do not commit it, paste it into issues, or share its contents.**
+コールバックリスナーはループバックアドレス（localhost）のみにバインドされるため、マシンの外部からアクセスされることはありません。保存されるファイルには機密性の高いアクセストークンおよびリフレッシュトークンが含まれています。**このファイルを Git にコミットしたり、Issue に貼り付けたり、他者と共有したりしないでください。**
 
-Signing in requests these Google OAuth scopes:
+ログイン時に要求される Google OAuth スコープ:
 
-| Scope                                | Why it's needed                                                           |
-| ------------------------------------ | ------------------------------------------------------------------------- |
-| `aicode`                             | Access to the Cloud Code Assist / Antigravity model catalog and endpoints |
-| `cloud-platform`                     | General Cloud Code Assist API access                                      |
-| `userinfo.email`, `userinfo.profile` | Identify the signed-in Google account                                     |
-| `cclog`                              | Cloud Code Assist logging/telemetry endpoints used by the API             |
-| `experimentsandconfigs`              | Server-side experiment and config flags for the API                       |
+| スコープ                             | 利用目的                                                                         |
+| ------------------------------------ | -------------------------------------------------------------------------------- |
+| `aicode`                             | Cloud Code Assist / Antigravity のモデルカタログおよびエンドポイントへのアクセス |
+| `cloud-platform`                     | Cloud Code Assist API 全般へのアクセス                                           |
+| `userinfo.email`, `userinfo.profile` | サインインした Google アカウントの識別                                           |
+| `cclog`                              | API が使用する Cloud Code Assist のロギング/テレメトリエンドポイント             |
+| `experimentsandconfigs`              | API のサーバーサイド実験フラグおよび設定フラグ                                   |
 
-Review these permissions before approving access. If your credentials expire or are revoked, just re-run `/login antigravity` to sign in again.
+アクセスを承認する前にこれらの権限を確認してください。認証情報の期限切れや取り消しが行われた場合は、再度 `/login antigravity` を実行してください。
 
-## Commands
+## コマンド一覧
 
-| Command                         | Description                                                                                                                |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `/login antigravity`            | Sign in to Google and configure the provider.                                                                              |
-| `/model antigravity/<model-id>` | Choose a registered Antigravity model.                                                                                     |
-| `/antigravity.usage`            | Show the server-reported shared quota groups and reset times.                                                              |
-| `/antigravity.models`           | List available runtime models, remaining shared-pool quota, and capabilities.                                              |
-| `/antigravity.models all`       | Include tab/chat models normally hidden from the model list.                                                               |
-| `/antigravity.doctor`           | Show sanitized provider diagnostics, including the endpoint, status, and resolved runtime model.                           |
-| `/antigravity.image <prompt>`   | Generate an image via Antigravity and save it under `.pi/generated-images/`. Optional `--ratio 16:9`, `--model`, `--path`. |
+| コマンド                        | 説明                                                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `/login antigravity`            | Google アカウントでサインインし、プロバイダーを設定します。                                                               |
+| `/model antigravity/<model-id>` | 登録されている Antigravity モデルを選択します。                                                                           |
+| `/antigravity.usage`            | サーバーから返された共有クォータグループとリセット時間を表示します。                                                      |
+| `/antigravity.models`           | 利用可能なランタイムモデル、共有プールの残余クォータ、対応機能を一覧表示します。                                          |
+| `/antigravity.models all`       | 通常モデル一覧から除外されている tab/chat モデルも含めて表示します。                                                      |
+| `/antigravity.doctor`           | エンドポイント、ステータス、解決されたランタイムモデルなど、機密情報をマスクした診断情報を表示します。                    |
+| `/antigravity.image <prompt>`   | Antigravity 経由で画像を生成し、`.pi/generated-images/` に保存します（オプション: `--ratio 16:9`, `--model`, `--path`）。 |
 
-Model availability, entitlement, quota groups, and resets are returned by the service and can differ by account. The quota percentage shown for a model can represent a shared pool, not a private per-model allowance.
+モデルの利用可否、権限、クォータグループ、リセット時間はサービス側から返され、アカウントによって異なる場合があります。モデルに表示されるクォータ残量は、個別の専用枠ではなく共有プールの残量を表す場合があります。
 
-The extension also registers a `generate_image` tool the model can call. Images are written inside the project directory (default `.pi/generated-images/`). Image models such as `gemini-3-pro-image` are account-dependent; `/antigravity.image` falls back to other advertised Gemini image IDs on 404.
+また、拡張機能はモデル自身が呼び出せる `generate_image` ツールも登録します。生成された画像はプロジェクトディレクトリ内（デフォルトは `.pi/generated-images/`）に保存されます。
 
-## Models and routing
+## モデルとルーティング
 
-The static model IDs registered by this extension match the Antigravity CLI catalog (`agy models`). Use `/antigravity.models` to see live availability and quota for your account — the table below is a reference for what each public model ID maps to.
+本拡張機能に静的登録されているモデル ID は、Antigravity CLI カタログ（`agy models`）と一致しています。アカウントごとのリアルタイムな利用状況やクォータを確認するには `/antigravity.models` を実行してください。
 
-`agy models` advertises display entries across Gemini Flash (3.8, 3.7, 3.6, 3.5), Gemini Pro, Claude Sonnet/Opus Thinking, and GPT-OSS Medium. Pi collapses those into eight public model IDs, each showing only the thinking level(s) that model advertises.
+`agy models` は、Gemini Flash（3.8, 3.7, 3.6, 3.5）、Gemini Pro、Claude Sonnet/Opus（Thinking）、GPT-OSS（Medium）にわたるモデル群を提供しています。Pi はこれらを 8 つの公開モデル ID に集約し、各モデルが対応している正確な思考レベル（Thinking Level）のみを UI に表示します。
 
-### Why Claude and GPT-OSS appear
+### Claude や GPT-OSS が含まれる理由
 
-Antigravity / Cloud Code Assist exposes a multi-provider catalog. Depending on your account, its Google-authenticated API can advertise Google Gemini models alongside Claude models served through Anthropic Vertex and GPT-OSS served through OpenAI Vertex. This extension intentionally exposes those advertised Claude and GPT-OSS models through the single `antigravity` provider; they are not separate Pi providers and do not use a separate Anthropic or OpenAI login.
+Antigravity / Cloud Code Assist はマルチプロバイダーカタログを提供しています。アカウントの権限に応じて、Google 認証 API 経由で Google Gemini モデルに加え、Anthropic Vertex 経由の Claude モデルや OpenAI Vertex 経由の GPT-OSS モデルも利用可能です。本拡張機能は、単一の `antigravity` プロバイダーを通じてこれらを意図的に提供しており、Anthropic や OpenAI への個別ログインは必要ありません。
 
-The backend's display labels do not always match its runtime IDs. For example, `gemini-3.5-flash-extra-low`, `gemini-3.5-flash-low`, and `gemini-3-flash-agent` can be displayed as Gemini 3.5 Flash Low, Medium, and High. Gemini 3.8, 3.7, and 3.6 Flash use per-effort runtime IDs and send `thinkingLevel`; Gemini 3.5 Flash and 3.1 Pro send `thinkingBudget`.
+バックエンドの表示ラベルと内部ランタイム ID は必ずしも一致しません（例: `gemini-3.5-flash-extra-low`、`gemini-3.5-flash-low`、`gemini-3-flash-agent` は Gemini 3.5 Flash の Low、Medium、High として表示されます）。Gemini 3.8、3.7、3.6 Flash は思考強度ごとのランタイム ID を使用し `thinkingLevel` を送信します。Gemini 3.5 Flash と 3.1 Pro は `thinkingBudget` を送信します。
 
-| Public model ID     | Input       | Thinking levels shown | Max output tokens | Request routing                                                                                    |
-| ------------------- | ----------- | --------------------- | ----------------- | -------------------------------------------------------------------------------------------------- |
-| `gemini-3.8-flash`  | Text, image | Low, Medium, High     | 65,536            | low → `gemini-3.8-flash-low`; medium → `gemini-3.8-flash-medium`; high → `gemini-3.8-flash-high`   |
-| `gemini-3.7-flash`  | Text, image | Low, Medium, High     | 65,536            | low → `gemini-3.7-flash-low`; medium → `gemini-3.7-flash-medium`; high → `gemini-3.7-flash-high`   |
-| `gemini-3.6-flash`  | Text, image | Low, Medium, High     | 65,536            | low → `gemini-3.6-flash-low`; medium → `gemini-3.6-flash-medium`; high → `gemini-3.6-flash-high`   |
-| `gemini-3.5-flash`  | Text, image | Low, Medium, High     | 65,536            | low → `gemini-3.5-flash-extra-low`; medium → `gemini-3.5-flash-low`; high → `gemini-3-flash-agent` |
-| `gemini-3.1-pro`    | Text, image | Low, High             | 65,535            | low → `gemini-3.1-pro-low`; high → `gemini-pro-agent`                                              |
-| `claude-sonnet-4-6` | Text, image | High                  | 64,000            | high → `claude-sonnet-4-6`                                                                         |
-| `claude-opus-4-6`   | Text, image | High                  | 64,000            | high → `claude-opus-4-6-thinking`                                                                  |
-| `gpt-oss-120b`      | Text        | Medium                | 32,768            | medium → `gpt-oss-120b-medium`                                                                     |
+| 公開モデル ID       | 入力           | 表示される思考レベル | 最大出力トークン | リクエストルーティング                                                                             |
+| ------------------- | -------------- | -------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
+| `gemini-3.8-flash`  | テキスト、画像 | Low, Medium, High    | 65,536           | low → `gemini-3.8-flash-low`; medium → `gemini-3.8-flash-medium`; high → `gemini-3.8-flash-high`   |
+| `gemini-3.7-flash`  | テキスト、画像 | Low, Medium, High    | 65,536           | low → `gemini-3.7-flash-low`; medium → `gemini-3.7-flash-medium`; high → `gemini-3.7-flash-high`   |
+| `gemini-3.6-flash`  | テキスト、画像 | Low, Medium, High    | 65,536           | low → `gemini-3.6-flash-low`; medium → `gemini-3.6-flash-medium`; high → `gemini-3.6-flash-high`   |
+| `gemini-3.5-flash`  | テキスト、画像 | Low, Medium, High    | 65,536           | low → `gemini-3.5-flash-extra-low`; medium → `gemini-3.5-flash-low`; high → `gemini-3-flash-agent` |
+| `gemini-3.1-pro`    | テキスト、画像 | Low, High            | 65,535           | low → `gemini-3.1-pro-low`; high → `gemini-pro-agent`                                              |
+| `claude-sonnet-4-6` | テキスト、画像 | High                 | 64,000           | high → `claude-sonnet-4-6`                                                                         |
+| `claude-opus-4-6`   | テキスト、画像 | High                 | 64,000           | high → `claude-opus-4-6-thinking`                                                                  |
+| `gpt-oss-120b`      | テキスト       | Medium               | 32,768           | medium → `gpt-oss-120b-medium`                                                                     |
 
-To limit which models Pi cycles through, enable specific entries in `~/.pi/agent/settings.json`:
+Pi で利用するモデルを制限したい場合は、`~/.pi/agent/settings.json` で明示的に指定できます:
 
 ```json
 {
@@ -129,51 +137,55 @@ To limit which models Pi cycles through, enable specific entries in `~/.pi/agent
 }
 ```
 
-## Configuration
+## 環境設定
 
-All primary environment variables start with `ANTIGRAVITY_`. The legacy `NOAGY_` prefix is also accepted for compatibility.
+主な環境変数はすべて `ANTIGRAVITY_` から始まります。互換性維持のため、従来の `NOAGY_` プレフィックスも認識されます。
 
-| Variable                    | Purpose                                                                                                          |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `ANTIGRAVITY_BASE_URL`      | Override the API base URL. It must be HTTPS, contain no URL credentials, and target an allowed Google APIs host. |
-| `ANTIGRAVITY_PROJECT_ID`    | Use a specific Cloud Code Assist project ID instead of discovery or the stable account fallback.                 |
-| `ANTIGRAVITY_CALLBACK_HOST` | Bind OAuth callback to `127.0.0.1`, `::1`, or `localhost` only. Defaults to `127.0.0.1`.                         |
-| `ANTIGRAVITY_USER_AGENT`    | Override the request user-agent.                                                                                 |
-| `ANTIGRAVITY_RUNTIME_MODEL` | Pin requests to a runtime model ID, bypassing normal static routing.                                             |
-| `ANTIGRAVITY_CLIENT_ID`     | Use a custom Google OAuth client ID.                                                                             |
-| `ANTIGRAVITY_CLIENT_SECRET` | Use a custom Google OAuth client secret. Keep it out of source control and shell history.                        |
-| `ANTIGRAVITY_NO_KEEPALIVE`  | Set to `1` to skip the keep-alive connection pool.                                                               |
-| `ANTIGRAVITY_NO_PREWARM`    | Set to `1` to skip the TLS pre-warm request made when the extension loads.                                       |
+| 環境変数                    | 概要・用途                                                                                                 |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `ANTIGRAVITY_BASE_URL`      | API ベース URL を上書きします。HTTPS かつ許可された Google API ホストである必要があります。                |
+| `ANTIGRAVITY_PROJECT_ID`    | 自動検出やアカウント固定値の代わりに、特定の Cloud Code Assist プロジェクト ID を指定します。              |
+| `ANTIGRAVITY_CALLBACK_HOST` | OAuth コールバックを `127.0.0.1`、`::1`、または `localhost` にバインドします（デフォルトは `127.0.0.1`）。 |
+| `ANTIGRAVITY_USER_AGENT`    | リクエスト時の User-Agent を上書きします。                                                                 |
+| `ANTIGRAVITY_RUNTIME_MODEL` | 通常の静的ルーティングを迂回し、リクエストを特定のランタイムモデル ID に固定します。                       |
+| `ANTIGRAVITY_CLIENT_ID`     | 独自の Google OAuth クライアント ID を使用します。                                                         |
+| `ANTIGRAVITY_CLIENT_SECRET` | 独自の Google OAuth クライアントシークレットを使用します。ソースコードやシェル履歴には含めないでください。 |
+| `ANTIGRAVITY_NO_KEEPALIVE`  | `1` を設定すると、Keep-Alive 接続プールを無効化します。                                                    |
+| `ANTIGRAVITY_NO_PREWARM`    | `1` を設定すると、拡張機能ロード時の TLS プリウォームリクエストをスキップします。                          |
 
-By default, the provider tries `https://daily-cloudcode-pa.googleapis.com`, then the sandbox host, then `https://cloudcode-pa.googleapis.com`. Prefer the built-in OAuth client unless you have a reason to use your own credentials.
+デフォルトでは `https://daily-cloudcode-pa.googleapis.com` を優先し、次にサンドボックス、その後に `https://cloudcode-pa.googleapis.com` を試行します。特別な理由がない限り、組み込みの OAuth クライアントの利用を推奨します。
 
-### Latency
+### レイテンシの最適化
 
-Provider requests reuse a keep-alive connection pool when the runtime supports it, so consecutive turns do not repeat the DNS, TCP, and TLS handshake. When `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY` is set, that pool is skipped so Pi's proxy-aware dispatcher is used instead. The connection is also opened when the extension loads so the first message of a session skips the handshake too. For the lowest time-to-first-token, pick a fast runtime: `gemini-3.7-flash` with reasoning off routes to `gemini-3.7-flash-low` at thinking level `LOW`. Setting `ANTIGRAVITY_PROJECT_ID` also removes the project-discovery round-trip when credentials do not already carry a project ID.
+本プロバイダーは Keep-Alive 接続プールを再利用するため、連続した会話ターンで DNS、TCP、TLS ハンドシェイクを繰り返しません（`HTTP_PROXY` などのプロキシ変数が設定されている場合はプロキシ対応ディスパッチャーを優先します）。拡張機能の読み込み時にも接続が開かれるため、セッション最初のメッセージでも高速な応答が期待できます。最速の TTFT（Time-to-First-Token）を得るには、`gemini-3.8-flash`（思考オフ時は `LOW` 思考で `gemini-3.8-flash-low` にルーティング）の利用が最適です。また、`ANTIGRAVITY_PROJECT_ID` を指定することでプロジェクト自動検出の往復オーバーヘッドも削減できます。
 
-## Troubleshooting
+## トラブルシューティング
 
-- **No credentials / 401 / 403:** Run `/login antigravity` again, then check `/antigravity.doctor`.
-- **Remote/headless machine — browser can't reach `localhost:51121`:** The callback binds to loopback only, so a browser on another machine can't hit it. You have two options:
-  - **Paste (no extra setup):** Run `/login antigravity`, open the shown URL and complete Google sign-in in _any_ browser. When it redirects to `http://localhost:51121/oauth-callback?…` and fails to load, copy that full URL from the address bar and paste it into the prompt Pi shows. The code is single-use and expires quickly, so paste promptly.
-  - **SSH tunnel (reusable):** From the machine with the browser, run `ssh -N -L 51121:127.0.0.1:51121 <user>@<server>` and keep it open, then run `/login antigravity` on the server. The redirect to `localhost:51121` tunnels through to the local callback automatically.
-- **OAuth callback will not start:** Ensure port `51121` is free and `ANTIGRAVITY_CALLBACK_HOST` is a permitted loopback address.
-- **Model is unavailable:** Run `/antigravity.models`; availability is account- and service-dependent.
-- **Claude/GPT tool-call schema error:** Upgrade to the latest package release. The provider adapts Pi's JSON Schema tool definitions for the Cloud Code Assist custom-tool bridge.
-- **Quota or rate limit:** Run `/antigravity.usage`. A `429` response usually indicates quota or rate limiting; changing models may still draw from the same shared pool.
-- **Need a safe diagnostic:** `/antigravity.doctor` redacts recognized secrets from its error output. Still review output before sharing it publicly.
+- **認証情報なし / 401 / 403 エラー:** 再度 `/login antigravity` を実行し、`/antigravity.doctor` を確認してください。
+- **リモート / ヘッドレス環境（ブラウザから `localhost:51121` にアクセスできない場合）:**
+  - **URL 貼り付け方式（追加設定不要）:** `/login antigravity` を実行し、表示された URL を任意のブラウザで開いてサインインします。リダイレクト先（`http://localhost:51121/oauth-callback?…`）でページ読み込みに失敗したら、ブラウザのアドレスバーから URL 全体をコピーし、Pi のプロンプトに入力してください（コードは有効期限が短いため速やかに入力してください）。
+  - **SSH トンネル方式:** ブラウザのあるマシンから `ssh -N -L 51121:127.0.0.1:51121 <user>@<server>` を実行したまま、サーバー上で `/login antigravity` を実行します。
+- **OAuth コールバックが開始しない:** ポート `51121` が空いているか、`ANTIGRAVITY_CALLBACK_HOST` が有効なループバックアドレスか確認してください。
+- **モデルが利用できない:** `/antigravity.models` を実行してください。利用可能性はアカウントやサービスの提供状況に依存します。
+- **Claude / GPT のツール呼び出しスキーマエラー:** 最新リリースに更新してください。Pi の JSON Schema ツール定義を Cloud Code Assist のカスタムツール仕様に自動変換します。
+- **クォータ・レート制限:** `/antigravity.usage` を確認してください。`429` エラーは通常クォータ上限を示します（モデルを切り替えても同一の共有プールを消費する場合があります）。
+- **安全な診断ログの確認:** `/antigravity.doctor` は機密情報を自動的にマスクして出力します。公開 Issue 等に投稿する前にも内容をご確認ください。
 
-## Development
+## 開発・コントリビューション
 
-This repo uses [Bun](https://bun.sh) for install, scripts, and CI. The published extension itself runs on Node (Pi's CLI).
+本リポジトリでは依存関係の管理、スクリプト実行、CI に [Bun](https://bun.sh) を採用しています（配布される拡張機能自体は Node / Pi CLI 上で動作します）。
 
 ```bash
 bun install
 bun run check
 ```
 
-The package declares its Pi extension in `package.json` under `pi.extensions`. See the [Pi package documentation](https://pi.dev/docs/latest/packages) for package installation, manifest, and gallery conventions.
+`bun run check` で型検査（typecheck）、ESLint、Prettier、セキュリティチェック、ルーティングテストが一括実行されます。
 
-## License
+## 友情リンク
+
+- [LINUX DO](https://linux.do/) - 真诚、友善、团结、专业，共建下一代开源与技术社区
+
+## ライセンス
 
 [MIT](LICENSE)
