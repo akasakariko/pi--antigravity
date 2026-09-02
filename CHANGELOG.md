@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- **Gemini 3.8 Flash support:** Added public model `gemini-3.8-flash` with Low, Medium, and High thinking-effort routing to `gemini-3.8-flash-low|medium|high`, 65,536 output token budget, 1,048,576 context window, and graceful fallback to `gemini-3.7-flash`.
+
 ## [0.6.0] - 2026-09-02
 
 ### Added

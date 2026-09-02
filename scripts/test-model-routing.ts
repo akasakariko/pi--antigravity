@@ -42,6 +42,13 @@ const assert = {
 const route = (model: string, effort?: string) => getAntigravityRequestModelId(model, effort);
 
 const routeCases: Array<[string, string | undefined, string]> = [
+  ["gemini-3.8-flash", undefined, "gemini-3.8-flash-low"],
+  ["gemini-3.8-flash", "off", "gemini-3.8-flash-low"],
+  ["gemini-3.8-flash", "minimal", "gemini-3.8-flash-low"],
+  ["gemini-3.8-flash", "low", "gemini-3.8-flash-low"],
+  ["gemini-3.8-flash", "medium", "gemini-3.8-flash-medium"],
+  ["gemini-3.8-flash", "high", "gemini-3.8-flash-high"],
+  ["gemini-3.8-flash", "xhigh", "gemini-3.8-flash-high"],
   ["gemini-3.7-flash", undefined, "gemini-3.7-flash-low"],
   ["gemini-3.7-flash", "off", "gemini-3.7-flash-low"],
   ["gemini-3.7-flash", "minimal", "gemini-3.7-flash-low"],
@@ -78,6 +85,7 @@ for (const [model, effort, expected] of routeCases) {
 
 const modelIds = new Set(ANTIGRAVITY_MODELS.map((model) => model.id));
 const expectedModels = [
+  "gemini-3.8-flash",
   "gemini-3.7-flash",
   "gemini-3.6-flash",
   "gemini-3.5-flash",
@@ -96,6 +104,7 @@ for (const expected of expectedModels) {
 }
 
 const expectedThinkingLevels: Record<string, string[]> = {
+  "gemini-3.8-flash": ["low", "medium", "high"],
   "gemini-3.7-flash": ["low", "medium", "high"],
   "gemini-3.6-flash": ["low", "medium", "high"],
   "gemini-3.5-flash": ["low", "medium", "high"],
@@ -387,6 +396,8 @@ assert.equal(imgPart.inlineData.data, "/9j/4AAQSkZJRg==");
 assert.equal(imgPart.inlineData.mimeType, "image/jpeg");
 
 // Test max output token limits per runtime model
+assert.equal(getMaxOutputTokens("gemini-3.8-flash", "gemini-3.8-flash-tiered"), 65536);
+assert.equal(getMaxOutputTokens("gemini-3.8-flash", "gemini-3.8-flash-low"), 65536);
 assert.equal(getMaxOutputTokens("gemini-3.7-flash", "gemini-3.7-flash-tiered"), 65536);
 assert.equal(getMaxOutputTokens("gemini-3.6-flash", "gemini-3.6-flash-low"), 65536);
 assert.equal(getMaxOutputTokens("gemini-3.1-pro", "gemini-3.1-pro-low"), 65535);
@@ -394,6 +405,14 @@ assert.equal(getMaxOutputTokens("claude-sonnet-4-6", "claude-sonnet-4-6"), 64000
 assert.equal(getMaxOutputTokens("gpt-oss-120b", "gpt-oss-120b-medium"), 32768);
 
 // Test fallback runtime models
+assert.equal(getFallbackRuntimeModel("gemini-3.8-flash-low"), "gemini-3.7-flash-low");
+assert.equal(getFallbackRuntimeModel("gemini-3.8-flash-medium"), "gemini-3.7-flash-medium");
+assert.equal(getFallbackRuntimeModel("gemini-3.8-flash-high"), "gemini-3.7-flash-high");
+assert.equal(
+  getFallbackRuntimeModel("gemini-3.8-flash-tiered", "medium"),
+  "gemini-3.7-flash-medium",
+);
+assert.equal(getFallbackRuntimeModel("gemini-3.8-flash"), "gemini-3.7-flash-low");
 assert.equal(getFallbackRuntimeModel("gemini-3.7-flash-low"), "gemini-3.6-flash-low");
 assert.equal(getFallbackRuntimeModel("gemini-3.7-flash-medium"), "gemini-3.6-flash-medium");
 assert.equal(getFallbackRuntimeModel("gemini-3.7-flash-high"), "gemini-3.6-flash-high");
@@ -445,7 +464,18 @@ const reqD = buildRequest(
 );
 assert.equal(reqD.request.generationConfig?.maxOutputTokens, 65535);
 
-// Case E: Gemini 3.7/3.6 send thinkingLevel; 3.5 sends thinkingBudget.
+// Case E: Gemini 3.8/3.7/3.6 send thinkingLevel; 3.5 sends thinkingBudget.
+const flash38Model = { ...model, id: "gemini-3.8-flash", maxTokens: 65536 };
+for (const [reasoning, thinkingLevel, runtime] of [
+  ["low", "LOW", "gemini-3.8-flash-low"],
+  ["medium", "MEDIUM", "gemini-3.8-flash-medium"],
+  ["high", "HIGH", "gemini-3.8-flash-high"],
+] as const) {
+  const request = buildRequest(flash38Model, dummyContext, "test-proj", { reasoning }, runtime);
+  assert.equal(request.request.generationConfig?.thinkingConfig?.thinkingLevel, thinkingLevel);
+  assert.equal(request.request.generationConfig?.thinkingConfig?.includeThoughts, true);
+}
+
 const flash37Model = { ...model, id: "gemini-3.7-flash", maxTokens: 65536 };
 for (const [reasoning, thinkingLevel, runtime] of [
   ["low", "LOW", "gemini-3.7-flash-low"],

@@ -95,16 +95,17 @@ The extension also registers a `generate_image` tool the model can call. Images 
 
 The static model IDs registered by this extension match the Antigravity CLI catalog (`agy models`). Use `/antigravity.models` to see live availability and quota for your account — the table below is a reference for what each public model ID maps to.
 
-`agy models` advertises display entries across Gemini Flash (3.7, 3.6, 3.5), Gemini Pro, Claude Sonnet/Opus Thinking, and GPT-OSS Medium. Pi collapses those into seven public model IDs, each showing only the thinking level(s) that model advertises.
+`agy models` advertises display entries across Gemini Flash (3.8, 3.7, 3.6, 3.5), Gemini Pro, Claude Sonnet/Opus Thinking, and GPT-OSS Medium. Pi collapses those into eight public model IDs, each showing only the thinking level(s) that model advertises.
 
 ### Why Claude and GPT-OSS appear
 
 Antigravity / Cloud Code Assist exposes a multi-provider catalog. Depending on your account, its Google-authenticated API can advertise Google Gemini models alongside Claude models served through Anthropic Vertex and GPT-OSS served through OpenAI Vertex. This extension intentionally exposes those advertised Claude and GPT-OSS models through the single `antigravity` provider; they are not separate Pi providers and do not use a separate Anthropic or OpenAI login.
 
-The backend's display labels do not always match its runtime IDs. For example, `gemini-3.5-flash-extra-low`, `gemini-3.5-flash-low`, and `gemini-3-flash-agent` can be displayed as Gemini 3.5 Flash Low, Medium, and High. Gemini 3.6 and 3.7 Flash use per-effort runtime IDs and send `thinkingLevel`; Gemini 3.5 Flash and 3.1 Pro send `thinkingBudget`.
+The backend's display labels do not always match its runtime IDs. For example, `gemini-3.5-flash-extra-low`, `gemini-3.5-flash-low`, and `gemini-3-flash-agent` can be displayed as Gemini 3.5 Flash Low, Medium, and High. Gemini 3.8, 3.7, and 3.6 Flash use per-effort runtime IDs and send `thinkingLevel`; Gemini 3.5 Flash and 3.1 Pro send `thinkingBudget`.
 
 | Public model ID     | Input       | Thinking levels shown | Max output tokens | Request routing                                                                                    |
 | ------------------- | ----------- | --------------------- | ----------------- | -------------------------------------------------------------------------------------------------- |
+| `gemini-3.8-flash`  | Text, image | Low, Medium, High     | 65,536            | low → `gemini-3.8-flash-low`; medium → `gemini-3.8-flash-medium`; high → `gemini-3.8-flash-high`   |
 | `gemini-3.7-flash`  | Text, image | Low, Medium, High     | 65,536            | low → `gemini-3.7-flash-low`; medium → `gemini-3.7-flash-medium`; high → `gemini-3.7-flash-high`   |
 | `gemini-3.6-flash`  | Text, image | Low, Medium, High     | 65,536            | low → `gemini-3.6-flash-low`; medium → `gemini-3.6-flash-medium`; high → `gemini-3.6-flash-high`   |
 | `gemini-3.5-flash`  | Text, image | Low, Medium, High     | 65,536            | low → `gemini-3.5-flash-extra-low`; medium → `gemini-3.5-flash-low`; high → `gemini-3-flash-agent` |
@@ -118,6 +119,7 @@ To limit which models Pi cycles through, enable specific entries in `~/.pi/agent
 ```json
 {
   "models": {
+    "antigravity/gemini-3.8-flash": { "enabled": true },
     "antigravity/gemini-3.7-flash": { "enabled": true },
     "antigravity/gemini-3.6-flash": { "enabled": true },
     "antigravity/gemini-3.5-flash": { "enabled": true },
