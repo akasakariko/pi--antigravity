@@ -6,11 +6,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Rahularya01/pi-antigravity.git"
+    "url": "git+https://github.com/KayanoLiam/pi--antigravity.git"
   },
-  "homepage": "https://github.com/Rahularya01/pi-antigravity#readme",
+  "homepage": "https://github.com/KayanoLiam/pi--antigravity#readme",
   "bugs": {
-    "url": "https://github.com/Rahularya01/pi-antigravity/issues"
+    "url": "https://github.com/KayanoLiam/pi--antigravity/issues"
   },
   "type": "module",
   "main": "./src/index.ts",
