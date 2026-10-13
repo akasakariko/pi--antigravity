@@ -11,7 +11,7 @@ import { antigravityFetch } from "../utils/http.js";
 import { safeError } from "../utils/security.js";
 import { antigravityRequestEnvelope, sanitizeText } from "../utils/util.js";
 
-export const DEFAULT_IMAGE_MODEL = "gemini-3-pro-image";
+export const DEFAULT_IMAGE_MODEL = "gemini-3.1-flash-image";
 export const IMAGE_ASPECT_RATIOS = [
   "1:1",
   "2:3",
@@ -28,7 +28,7 @@ export type ImageAspectRatio = (typeof IMAGE_ASPECT_RATIOS)[number];
 
 const IMAGE_MODEL_FALLBACKS = [
   DEFAULT_IMAGE_MODEL,
-  "gemini-3.1-flash-image",
+  "gemini-3-pro-image",
   "gemini-3-pro-image-preview",
 ];
 const IMAGE_SYSTEM_INSTRUCTION =

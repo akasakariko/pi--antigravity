@@ -2,11 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
+## [0.6.1] - 2026-10-13
 
-### Added
+### Changed
 
-- **Gemini 3.8 Flash support:** Added public model `gemini-3.8-flash` with Low, Medium, and High thinking-effort routing to `gemini-3.8-flash-low|medium|high`, 65,536 output token budget, 1,048,576 context window, and graceful fallback to `gemini-3.7-flash`.
+- **Model catalog refresh:** Aligned active public model catalog with official Antigravity CLI `agy models` (Gemini 3.8 Flash, Claude Sonnet 4.6, Claude Opus 4.6, and GPT-OSS 120B)
+- **Retired model routing:** Added backward-compatibility aliases routing retired models (Gemini 3.7 / 3.6 / 3.5 Flash and Gemini 3.1 Pro) to Gemini 3.8 Flash to prevent 404 errors on legacy configurations
+- **Image generation default model:** Updated default image model to `gemini-3.1-flash-image`
+- **Tier fallback routing:** Updated fallback logic to step through Gemini 3.8 Flash tiers instead of retired versions
+
+### Fixed
+
+- **Transcript system messages:** Preserved transcript system messages and live tool declarations on Pi 0.86+ and 0.87+ so tools and image paths are not dropped
 
 ## [0.6.0] - 2026-09-02
 

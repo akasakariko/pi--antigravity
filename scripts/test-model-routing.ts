@@ -49,30 +49,22 @@ const routeCases: Array<[string, string | undefined, string]> = [
   ["gemini-3.8-flash", "medium", "gemini-3.8-flash-medium"],
   ["gemini-3.8-flash", "high", "gemini-3.8-flash-high"],
   ["gemini-3.8-flash", "xhigh", "gemini-3.8-flash-high"],
-  ["gemini-3.7-flash", undefined, "gemini-3.7-flash-low"],
-  ["gemini-3.7-flash", "off", "gemini-3.7-flash-low"],
-  ["gemini-3.7-flash", "minimal", "gemini-3.7-flash-low"],
-  ["gemini-3.7-flash", "low", "gemini-3.7-flash-low"],
-  ["gemini-3.7-flash", "medium", "gemini-3.7-flash-medium"],
-  ["gemini-3.7-flash", "high", "gemini-3.7-flash-high"],
-  ["gemini-3.7-flash", "xhigh", "gemini-3.7-flash-high"],
-  ["gemini-3.6-flash", undefined, "gemini-3.6-flash-low"],
-  ["gemini-3.6-flash", "off", "gemini-3.6-flash-low"],
-  ["gemini-3.6-flash", "minimal", "gemini-3.6-flash-low"],
-  ["gemini-3.6-flash", "low", "gemini-3.6-flash-low"],
-  ["gemini-3.6-flash", "medium", "gemini-3.6-flash-medium"],
-  ["gemini-3.6-flash", "high", "gemini-3.6-flash-high"],
-  ["gemini-3.6-flash", "xhigh", "gemini-3.6-flash-high"],
-  ["gemini-3.5-flash", undefined, "gemini-3.5-flash-extra-low"],
-  ["gemini-3.5-flash", "off", "gemini-3.5-flash-extra-low"],
-  ["gemini-3.5-flash", "minimal", "gemini-3.5-flash-extra-low"],
-  ["gemini-3.5-flash", "low", "gemini-3.5-flash-extra-low"],
-  ["gemini-3.5-flash", "medium", "gemini-3.5-flash-low"],
-  ["gemini-3.5-flash", "high", "gemini-3-flash-agent"],
-  ["gemini-3.5-flash", "xhigh", "gemini-3-flash-agent"],
-  ["gemini-3.1-pro", "medium", "gemini-3.1-pro-low"],
-  ["gemini-3.1-pro", "high", "gemini-pro-agent"],
-  ["gemini-3.1-pro", "xhigh", "gemini-pro-agent"],
+  // Retired models alias gracefully to Gemini 3.8 Flash
+  ["gemini-3.7-flash", undefined, "gemini-3.8-flash-low"],
+  ["gemini-3.7-flash", "off", "gemini-3.8-flash-low"],
+  ["gemini-3.7-flash", "minimal", "gemini-3.8-flash-low"],
+  ["gemini-3.7-flash", "low", "gemini-3.8-flash-low"],
+  ["gemini-3.7-flash", "medium", "gemini-3.8-flash-medium"],
+  ["gemini-3.7-flash", "high", "gemini-3.8-flash-high"],
+  ["gemini-3.7-flash", "xhigh", "gemini-3.8-flash-high"],
+  ["gemini-3.6-flash", undefined, "gemini-3.8-flash-low"],
+  ["gemini-3.6-flash", "medium", "gemini-3.8-flash-medium"],
+  ["gemini-3.6-flash", "high", "gemini-3.8-flash-high"],
+  ["gemini-3.5-flash", undefined, "gemini-3.8-flash-low"],
+  ["gemini-3.5-flash", "medium", "gemini-3.8-flash-medium"],
+  ["gemini-3.5-flash", "high", "gemini-3.8-flash-high"],
+  ["gemini-3.1-pro", "medium", "gemini-3.8-flash-medium"],
+  ["gemini-3.1-pro", "high", "gemini-3.8-flash-high"],
   ["claude-sonnet-4-6", "xhigh", "claude-sonnet-4-6"],
   ["claude-opus-4-6", "high", "claude-opus-4-6-thinking"],
   ["gpt-oss-120b", "high", "gpt-oss-120b-medium"],
@@ -86,10 +78,6 @@ for (const [model, effort, expected] of routeCases) {
 const modelIds = new Set(ANTIGRAVITY_MODELS.map((model) => model.id));
 const expectedModels = [
   "gemini-3.8-flash",
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-3.1-pro",
   "claude-sonnet-4-6",
   "claude-opus-4-6",
   "gpt-oss-120b",
@@ -405,23 +393,15 @@ assert.equal(getMaxOutputTokens("claude-sonnet-4-6", "claude-sonnet-4-6"), 64000
 assert.equal(getMaxOutputTokens("gpt-oss-120b", "gpt-oss-120b-medium"), 32768);
 
 // Test fallback runtime models
-assert.equal(getFallbackRuntimeModel("gemini-3.8-flash-low"), "gemini-3.7-flash-low");
-assert.equal(getFallbackRuntimeModel("gemini-3.8-flash-medium"), "gemini-3.7-flash-medium");
-assert.equal(getFallbackRuntimeModel("gemini-3.8-flash-high"), "gemini-3.7-flash-high");
+assert.equal(getFallbackRuntimeModel("gemini-3.8-flash-high"), "gemini-3.8-flash-medium");
+assert.equal(getFallbackRuntimeModel("gemini-3.8-flash-medium"), "gemini-3.8-flash-low");
 assert.equal(
   getFallbackRuntimeModel("gemini-3.8-flash-tiered", "medium"),
-  "gemini-3.7-flash-medium",
+  "gemini-3.8-flash-medium",
 );
-assert.equal(getFallbackRuntimeModel("gemini-3.8-flash"), "gemini-3.7-flash-low");
-assert.equal(getFallbackRuntimeModel("gemini-3.7-flash-low"), "gemini-3.6-flash-low");
-assert.equal(getFallbackRuntimeModel("gemini-3.7-flash-medium"), "gemini-3.6-flash-medium");
-assert.equal(getFallbackRuntimeModel("gemini-3.7-flash-high"), "gemini-3.6-flash-high");
-assert.equal(
-  getFallbackRuntimeModel("gemini-3.7-flash-tiered", "medium"),
-  "gemini-3.6-flash-medium",
-);
-assert.equal(getFallbackRuntimeModel("gemini-3.7-flash"), "gemini-3.6-flash-low");
-assert.equal(getFallbackRuntimeModel("gemini-3.6-flash-low"), undefined);
+assert.equal(getFallbackRuntimeModel("gemini-3.8-flash-tiered"), "gemini-3.8-flash-medium");
+assert.equal(getFallbackRuntimeModel("gemini-3.7-flash-low"), "gemini-3.8-flash-low");
+assert.equal(getFallbackRuntimeModel("gemini-3.6-flash-low"), "gemini-3.8-flash-low");
 assert.equal(getFallbackRuntimeModel("claude-sonnet-4-6"), undefined);
 
 // Test buildRequest output token clamping
@@ -703,7 +683,70 @@ const fallbackPersona = buildRequest(flash37Model, dummyContext, "test-proj", {}
 assert.equal(fallbackPersona.request.systemInstruction.parts.length, 2);
 assert.match(fallbackPersona.request.systemInstruction.parts[0]?.text || "", /You are Antigravity/);
 
-const flashCost = ANTIGRAVITY_MODELS.find((m) => m.id === "gemini-3.7-flash")?.cost;
+const readTool = {
+  name: "read",
+  description: "Read the contents of a file. Supports text files and images.",
+  parameters: {
+    type: "object",
+    properties: { path: { type: "string" } },
+    required: ["path"],
+  },
+} as Tool;
+const transcriptContext = {
+  systemPrompt: "STALE shorthand prompt",
+  tools: [
+    {
+      name: "stale_tool",
+      description: "must not be sent when the transcript declares tools",
+      parameters: { type: "object" },
+    },
+  ],
+  messages: [
+    {
+      role: "system",
+      content: "",
+      sections: {
+        tools: "<tools>\n- read: Read file contents\n</tools>",
+        rules: "Use read to examine pasted image paths.",
+        dropped: "remove me",
+      },
+      toolsAdded: [readTool],
+      timestamp: Date.now(),
+    },
+    {
+      role: "system",
+      content: "",
+      sections: { dropped: null },
+      timestamp: Date.now(),
+    },
+    {
+      role: "user",
+      content: "/tmp/pi-clipboard-test.png",
+      timestamp: Date.now(),
+    },
+  ],
+} as unknown as Context;
+const fromTranscript = buildRequest(
+  flash38Model,
+  transcriptContext,
+  "test-proj",
+  {},
+  "gemini-3.8-flash-low",
+);
+const transcriptInstruction = fromTranscript.request.systemInstruction.parts[0]?.text || "";
+assert.match(transcriptInstruction, /Use read to examine pasted image paths/);
+assert.match(transcriptInstruction, /<tools>/);
+assert.equal(transcriptInstruction.includes("STALE shorthand prompt"), false);
+assert.equal(transcriptInstruction.includes("remove me"), false);
+assert.equal(fromTranscript.request.tools?.[0]?.functionDeclarations.length, 1);
+assert.equal(fromTranscript.request.tools?.[0]?.functionDeclarations[0]?.name, "read");
+assert.equal(
+  fromTranscript.request.contents.some((turn) => turn.role === "system"),
+  false,
+  "system transcript messages must not be sent as Gemini turns",
+);
+
+const flashCost = ANTIGRAVITY_MODELS.find((m) => m.id === "gemini-3.8-flash")?.cost;
 assert.equal(flashCost?.input, 0.1);
 assert.equal(flashCost?.output, 0.4);
 const opusCost = ANTIGRAVITY_MODELS.find((m) => m.id === "claude-opus-4-6")?.cost;

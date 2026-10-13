@@ -466,6 +466,64 @@ function mapToolChoiceMode(
   return GeminiToolCallingMode.Auto;
 }
 
+type TranscriptSystemMessage = {
+  role?: string;
+  content?: unknown;
+  sections?: Record<string, string | null>;
+  toolsAdded?: Tool[];
+  toolsRemoved?: Array<{ name: string }>;
+};
+
+function transcriptContentText(content: unknown): string {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return "";
+  return content
+    .flatMap((block) => {
+      if (!isRecord(block) || block.type !== "text" || typeof block.text !== "string") return [];
+      return [block.text];
+    })
+    .join("\n");
+}
+
+/**
+ * Pi 0.87+ puts the live system prompt and tool declarations on transcript system
+ * messages. `context.systemPrompt` / `context.tools` are only the pre-transcript
+ * shorthand. Reading those empty fields dropped every tool, including `read`, so
+ * Gemini could not open pasted image paths.
+ *
+ * Exported for unit tests.
+ */
+export function resolveProviderPromptAndTools(context: Context): {
+  systemPrompt: string;
+  tools: Tool[];
+} {
+  const content: string[] = [];
+  const sections = new Map<string, string>();
+  const tools = new Map<string, Tool>();
+  let sawToolState = false;
+
+  for (const message of (context.messages ?? []) as TranscriptSystemMessage[]) {
+    if (message.role !== "system") continue;
+    const text = transcriptContentText(message.content);
+    if (text.length > 0) content.push(text);
+    for (const [name, value] of Object.entries(message.sections ?? {})) {
+      if (value === null) sections.delete(name);
+      else if (typeof value === "string") sections.set(name, value);
+    }
+    if (message.toolsAdded || message.toolsRemoved) sawToolState = true;
+    for (const tool of message.toolsRemoved ?? []) tools.delete(tool.name);
+    for (const tool of message.toolsAdded ?? []) tools.set(tool.name, tool);
+  }
+
+  const parts = [content.join("\n\n")];
+  for (const text of sections.values()) parts.push(text);
+  const transcriptPrompt = parts.filter((part) => part.length > 0).join("\n\n");
+  return {
+    systemPrompt: transcriptPrompt || context.systemPrompt || "",
+    tools: sawToolState ? [...tools.values()] : (context.tools ?? []),
+  };
+}
+
 /** Exported for unit tests. */
 export function buildRequest(
   model: Model<Api>,
@@ -474,12 +532,13 @@ export function buildRequest(
   options: AntigravityStreamOptions,
   runtimeModel: string,
 ): AntigravityGenerateRequest {
+  const { systemPrompt, tools: declaredTools } = resolveProviderPromptAndTools(context);
   const request: GeminiRequestBody = {
     contents: convertMessages(model, context, runtimeModel),
     systemInstruction: {
       role: GeminiRole.User,
-      parts: context.systemPrompt
-        ? [{ text: sanitizeText(context.systemPrompt) }]
+      parts: systemPrompt
+        ? [{ text: sanitizeText(systemPrompt) }]
         : [{ text: ANTIGRAVITY_SYSTEM_INSTRUCTION }, { text: ANTIGRAVITY_NO_PREAMBLE_INSTRUCTION }],
     },
   };
@@ -497,7 +556,7 @@ export function buildRequest(
   if (Object.keys(generationConfig).length) request.generationConfig = generationConfig;
 
   const isClaude = model.id.startsWith("claude-") || runtimeModel.startsWith("claude-");
-  const tools = convertTools(context.tools, isClaude || model.id.startsWith("gpt-oss-"));
+  const tools = convertTools(declaredTools, isClaude || model.id.startsWith("gpt-oss-"));
   if (tools) {
     request.tools = tools;
     request.toolConfig = {
