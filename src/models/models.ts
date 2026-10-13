@@ -8,18 +8,16 @@ export const PROVIDER_NAME = "Antigravity";
 /**
  * Public selectable model IDs → backend request model IDs by thinking effort.
  *
- * Catalog mirrors `agy models` (Antigravity CLI), which currently advertises:
+ * Catalog mirrors current `agy models` (Antigravity CLI), which advertises:
  * - Gemini 3.8 Flash (Low / Medium / High)
- * - Gemini 3.7 Flash (Low / Medium / High)
- * - Gemini 3.6 Flash (Low / Medium / High)
- * - Gemini 3.5 Flash (Low / Medium / High)
- * - Gemini 3.1 Pro (Low / High)
  * - Claude Sonnet 4.6 (Thinking)
  * - Claude Opus 4.6 (Thinking)
  * - GPT-OSS 120B (Medium)
  *
- * Pi exposes those as public model IDs and only surfaces the exact thinking levels
- * advertised by the backend for each model.
+ * Deprecated generations (Gemini 3.7 / 3.6 / 3.5 Flash, Gemini 3.1 Pro) have been
+ * retired by the Google Cloud Code Assist backend (returning 404 / shut down).
+ * They are preserved in ANTIGRAVITY_ROUTING as backward-compatibility aliases
+ * routing to Gemini 3.8 Flash so legacy saved configurations continue to operate.
  */
 export const ANTIGRAVITY_ROUTING: Record<string, AntigravityRouting> = {
   "claude-opus-4-6": {
@@ -43,19 +41,6 @@ export const ANTIGRAVITY_ROUTING: Record<string, AntigravityRouting> = {
     },
     defaultRequestId: "claude-sonnet-4-6",
   },
-  "gemini-3.1-pro": {
-    // `gemini-3.1-pro-high` is advertised but currently 400s for agent streamGenerateContent;
-    // `gemini-pro-agent` is the working High runtime id (same display name in fetchAvailableModels).
-    off: "gemini-3.1-pro-low",
-    routing: {
-      minimal: "gemini-3.1-pro-low",
-      low: "gemini-3.1-pro-low",
-      medium: "gemini-3.1-pro-low",
-      high: "gemini-pro-agent",
-      xhigh: "gemini-pro-agent",
-    },
-    defaultRequestId: "gemini-3.1-pro-low",
-  },
   "gemini-3.8-flash": {
     off: "gemini-3.8-flash-low",
     routing: {
@@ -67,40 +52,6 @@ export const ANTIGRAVITY_ROUTING: Record<string, AntigravityRouting> = {
     },
     defaultRequestId: "gemini-3.8-flash-low",
   },
-  "gemini-3.7-flash": {
-    off: "gemini-3.7-flash-low",
-    routing: {
-      minimal: "gemini-3.7-flash-low",
-      low: "gemini-3.7-flash-low",
-      medium: "gemini-3.7-flash-medium",
-      high: "gemini-3.7-flash-high",
-      xhigh: "gemini-3.7-flash-high",
-    },
-    defaultRequestId: "gemini-3.7-flash-low",
-  },
-  "gemini-3.6-flash": {
-    // agy models: gemini-3.6-flash-low / -medium / -high
-    off: "gemini-3.6-flash-low",
-    routing: {
-      minimal: "gemini-3.6-flash-low",
-      low: "gemini-3.6-flash-low",
-      medium: "gemini-3.6-flash-medium",
-      high: "gemini-3.6-flash-high",
-      xhigh: "gemini-3.6-flash-high",
-    },
-    defaultRequestId: "gemini-3.6-flash-low",
-  },
-  "gemini-3.5-flash": {
-    off: "gemini-3.5-flash-extra-low",
-    routing: {
-      minimal: "gemini-3.5-flash-extra-low",
-      low: "gemini-3.5-flash-extra-low",
-      medium: "gemini-3.5-flash-low",
-      high: "gemini-3-flash-agent",
-      xhigh: "gemini-3-flash-agent",
-    },
-    defaultRequestId: "gemini-3.5-flash-extra-low",
-  },
   "gpt-oss-120b": {
     off: "gpt-oss-120b-medium",
     routing: {
@@ -110,6 +61,53 @@ export const ANTIGRAVITY_ROUTING: Record<string, AntigravityRouting> = {
       high: "gpt-oss-120b-medium",
     },
     defaultRequestId: "gpt-oss-120b-medium",
+  },
+  // --- Backward-compatibility aliases for retired models ---
+  // The backend returns 404 for Gemini 3.7 / 3.6 / 3.1 and shut down 3.5.
+  // Seamlessly map them to Gemini 3.8 Flash variants.
+  "gemini-3.7-flash": {
+    off: "gemini-3.8-flash-low",
+    routing: {
+      minimal: "gemini-3.8-flash-low",
+      low: "gemini-3.8-flash-low",
+      medium: "gemini-3.8-flash-medium",
+      high: "gemini-3.8-flash-high",
+      xhigh: "gemini-3.8-flash-high",
+    },
+    defaultRequestId: "gemini-3.8-flash-low",
+  },
+  "gemini-3.6-flash": {
+    off: "gemini-3.8-flash-low",
+    routing: {
+      minimal: "gemini-3.8-flash-low",
+      low: "gemini-3.8-flash-low",
+      medium: "gemini-3.8-flash-medium",
+      high: "gemini-3.8-flash-high",
+      xhigh: "gemini-3.8-flash-high",
+    },
+    defaultRequestId: "gemini-3.8-flash-low",
+  },
+  "gemini-3.5-flash": {
+    off: "gemini-3.8-flash-low",
+    routing: {
+      minimal: "gemini-3.8-flash-low",
+      low: "gemini-3.8-flash-low",
+      medium: "gemini-3.8-flash-medium",
+      high: "gemini-3.8-flash-high",
+      xhigh: "gemini-3.8-flash-high",
+    },
+    defaultRequestId: "gemini-3.8-flash-low",
+  },
+  "gemini-3.1-pro": {
+    off: "gemini-3.8-flash-low",
+    routing: {
+      minimal: "gemini-3.8-flash-low",
+      low: "gemini-3.8-flash-low",
+      medium: "gemini-3.8-flash-medium",
+      high: "gemini-3.8-flash-high",
+      xhigh: "gemini-3.8-flash-high",
+    },
+    defaultRequestId: "gemini-3.8-flash-low",
   },
 };
 
@@ -125,7 +123,6 @@ export const RUNTIME_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "gemini-3.8-flash-high": 65536,
   "gemini-3.7-flash": 65536,
   "gemini-3.7-flash-tiered": 65536,
-  // Retain rollout-era IDs for compatibility with pinned runtime overrides.
   "gemini-3.7-flash-low": 65536,
   "gemini-3.7-flash-medium": 65536,
   "gemini-3.7-flash-high": 65536,
@@ -166,7 +163,6 @@ export function getMaxOutputTokens(modelId: string, runtimeModel?: string): numb
 }
 
 const geminiFlashCost = { input: 0.1, output: 0.4, cacheRead: 0.025, cacheWrite: 0.1 };
-const geminiProCost = { input: 1.25, output: 5.0, cacheRead: 0.3125, cacheWrite: 1.25 };
 const claudeSonnetCost = { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 };
 const claudeOpusCost = { input: 15.0, output: 75.0, cacheRead: 1.5, cacheWrite: 18.75 };
 const gptOssCost = { input: 0.6, output: 2.4, cacheRead: 0.15, cacheWrite: 0.6 };
@@ -179,15 +175,6 @@ const thinkingLevelMaps = {
     minimal: null,
     low: "low",
     medium: "medium",
-    high: "high",
-    xhigh: null,
-    max: null,
-  },
-  lowHigh: {
-    off: null,
-    minimal: null,
-    low: "low",
-    medium: null,
     high: "high",
     xhigh: null,
     max: null,
@@ -210,9 +197,12 @@ const thinkingLevelMaps = {
     xhigh: null,
     max: null,
   },
-} satisfies Record<string, ProviderModelConfig["thinkingLevelMap"]>;
+} satisfies Record<
+  string,
+  Extract<ProviderModelConfig, { thinkingLevelMap?: unknown }>["thinkingLevelMap"]
+>;
 
-/** Same set as `agy models`, collapsed to public Pi model IDs. */
+/** Active selectable models matching `agy models`. */
 export const ANTIGRAVITY_MODELS: ProviderModelConfig[] = [
   {
     id: "gemini-3.8-flash",
@@ -225,36 +215,6 @@ export const ANTIGRAVITY_MODELS: ProviderModelConfig[] = [
     maxTokens: 65536,
   },
   {
-    id: "gemini-3.7-flash",
-    name: "Gemini 3.7 Flash (Antigravity)",
-    reasoning: true,
-    thinkingLevelMap: thinkingLevelMaps.lowMediumHigh,
-    input: ["text", "image"],
-    cost: geminiFlashCost,
-    contextWindow: 1048576,
-    maxTokens: 65536,
-  },
-  {
-    id: "gemini-3.6-flash",
-    name: "Gemini 3.6 Flash (Antigravity)",
-    reasoning: true,
-    thinkingLevelMap: thinkingLevelMaps.lowMediumHigh,
-    input: ["text", "image"],
-    cost: geminiFlashCost,
-    contextWindow: 1048576,
-    maxTokens: 65536,
-  },
-  {
-    id: "claude-opus-4-6",
-    name: "Claude Opus 4.6 (Antigravity)",
-    reasoning: true,
-    thinkingLevelMap: thinkingLevelMaps.thinking,
-    input: ["text", "image"],
-    cost: claudeOpusCost,
-    contextWindow: 250000,
-    maxTokens: 64000,
-  },
-  {
     id: "claude-sonnet-4-6",
     name: "Claude Sonnet 4.6 (Antigravity)",
     reasoning: true,
@@ -265,24 +225,14 @@ export const ANTIGRAVITY_MODELS: ProviderModelConfig[] = [
     maxTokens: 64000,
   },
   {
-    id: "gemini-3.1-pro",
-    name: "Gemini 3.1 Pro (Antigravity)",
+    id: "claude-opus-4-6",
+    name: "Claude Opus 4.6 (Antigravity)",
     reasoning: true,
-    thinkingLevelMap: thinkingLevelMaps.lowHigh,
+    thinkingLevelMap: thinkingLevelMaps.thinking,
     input: ["text", "image"],
-    cost: geminiProCost,
-    contextWindow: 1048576,
-    maxTokens: 65535,
-  },
-  {
-    id: "gemini-3.5-flash",
-    name: "Gemini 3.5 Flash (Antigravity)",
-    reasoning: true,
-    thinkingLevelMap: thinkingLevelMaps.lowMediumHigh,
-    input: ["text", "image"],
-    cost: geminiFlashCost,
-    contextWindow: 1048576,
-    maxTokens: 65536,
+    cost: claudeOpusCost,
+    contextWindow: 250000,
+    maxTokens: 64000,
   },
   {
     id: "gpt-oss-120b",
@@ -329,27 +279,23 @@ export function getAntigravityRequestModelId(modelId: string, effort: string | u
 }
 
 /**
- * If a next-gen model (e.g. Gemini 3.8 Flash) is not yet available on the backend,
- * provide a fallback runtime model ID (e.g. Gemini 3.7 Flash) to maintain availability.
+ * Provide runtime tier fallbacks within the active model family to maintain availability.
  */
 export function getFallbackRuntimeModel(runtimeModel: string, effort?: string): string | undefined {
   if (runtimeModel === "gemini-3.8-flash-tiered") {
-    return getAntigravityRequestModelId("gemini-3.7-flash", effort);
+    return getAntigravityRequestModelId("gemini-3.8-flash", effort ?? "medium");
   }
-  if (runtimeModel.startsWith("gemini-3.8-flash-")) {
-    return runtimeModel.replace("gemini-3.8-flash-", "gemini-3.7-flash-");
+  if (runtimeModel === "gemini-3.8-flash-high") {
+    return "gemini-3.8-flash-medium";
   }
-  if (runtimeModel === "gemini-3.8-flash") {
-    return "gemini-3.7-flash-low";
+  if (runtimeModel === "gemini-3.8-flash-medium") {
+    return "gemini-3.8-flash-low";
   }
-  if (runtimeModel === "gemini-3.7-flash-tiered") {
-    return getAntigravityRequestModelId("gemini-3.6-flash", effort);
-  }
-  if (runtimeModel.startsWith("gemini-3.7-flash-")) {
-    return runtimeModel.replace("gemini-3.7-flash-", "gemini-3.6-flash-");
-  }
-  if (runtimeModel === "gemini-3.7-flash") {
-    return "gemini-3.6-flash-low";
+  if (
+    runtimeModel.startsWith("gemini-3.7-flash-") ||
+    runtimeModel.startsWith("gemini-3.6-flash-")
+  ) {
+    return getAntigravityRequestModelId("gemini-3.8-flash", effort);
   }
   return undefined;
 }
@@ -363,9 +309,17 @@ export type ThinkingWire = {
 };
 
 export const ANTIGRAVITY_MODEL_ENUM: Record<string, string> = {
+  "gemini-3.8-flash-high": "MODEL_PLACEHOLDER_M318",
+  "gemini-3.8-flash-medium": "MODEL_PLACEHOLDER_M319",
+  "gemini-3.8-flash-low": "MODEL_PLACEHOLDER_M320",
+  "gemini-3.8-flash-tiered": "MODEL_PLACEHOLDER_M322",
+  "claude-sonnet-4-6": "MODEL_PLACEHOLDER_M35",
+  "claude-opus-4-6-thinking": "MODEL_PLACEHOLDER_M26",
+  "gpt-oss-120b-medium": "MODEL_OPENAI_GPT_OSS_120B_MEDIUM",
+  // Legacy mappings retained for reference
   "gemini-3.5-flash-extra-low": "MODEL_PLACEHOLDER_M187",
   "gemini-3.5-flash-low": "MODEL_PLACEHOLDER_M20",
-  "gemini-3-flash-agent": "MODEL_PLACEHOLDER_M132",
+  "gemini-3-flash-agent": "MODEL_PLACEHOLDER_M84",
   "gemini-3.1-pro-low": "MODEL_PLACEHOLDER_M36",
   "gemini-pro-agent": "MODEL_PLACEHOLDER_M16",
 };

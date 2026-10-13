@@ -50,6 +50,7 @@ async function main() {
 
   assert(parseImageCommandArgs("").prompt === "", "empty args");
   assert(assertSafeImageModel("gemini-3-pro-image") === "gemini-3-pro-image", "allow gemini image model");
+  assert(assertSafeImageModel("gemini-3.1-flash-image") === "gemini-3.1-flash-image", "allow gemini 3.1 flash image");
   assert(assertSafeImageModel("imagen-3.0-generate-002") === "imagen-3.0-generate-002", "allow imagen");
   try {
     assertSafeImageModel("claude-opus-4-6");

@@ -1,16 +1,16 @@
 {
   "name": "pi-antigravity",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Personal Antigravity / Cloud Code Assist provider for Pi Coding Agent",
   "author": "Rahul Arya",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/KayanoLiam/pi--antigravity.git"
+    "url": "git+https://github.com/akasakariko/pi--antigravity.git"
   },
-  "homepage": "https://github.com/KayanoLiam/pi--antigravity#readme",
+  "homepage": "https://github.com/akasakariko/pi--antigravity#readme",
   "bugs": {
-    "url": "https://github.com/KayanoLiam/pi--antigravity/issues"
+    "url": "https://github.com/akasakariko/pi--antigravity/issues"
   },
   "type": "module",
   "main": "./src/index.ts",
@@ -51,7 +51,7 @@
     "@earendil-works/pi-coding-agent": ">=0.80.0"
   },
   "devDependencies": {
-    "@earendil-works/pi-ai": "^0.84.2",
+    "@earendil-works/pi-ai": "^1.2.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.1",
     "eslint": "^10.7.0",

@@ -1,7 +1,7 @@
 # pi-antigravity
 
-[![license](https://img.shields.io/github/license/KayanoLiam/pi--antigravity)](LICENSE)
-[![Google Gemini 3.8 Flash](https://img.shields.io/badge/Gemini_3.8_Flash-Supported-blue?logo=google)](https://github.com/KayanoLiam/pi--antigravity)
+[![license](https://img.shields.io/github/license/akasakariko/pi--antigravity)](LICENSE)
+[![Google Gemini 3.8 Flash](https://img.shields.io/badge/Gemini_3.8_Flash-Supported-blue?logo=google)](https://github.com/akasakariko/pi--antigravity)
 
 **pi-antigravity** は、[Pi Coding Agent](https://pi.dev) から Google Antigravity / Cloud Code Assist のモデル群を直接利用できるようにする拡張機能（プロバイダー）です。
 
@@ -55,13 +55,13 @@
 Pi の組み込みインストーラーを使用します：
 
 ```bash
-pi install git:github.com/KayanoLiam/pi--antigravity
+pi install git:github.com/akasakariko/pi--antigravity
 ```
 
 _(または HTTPS URL を直接指定)_:
 
 ```bash
-pi install https://github.com/KayanoLiam/pi--antigravity
+pi install https://github.com/akasakariko/pi--antigravity
 ```
 
 ### 2. ローカルディレクトリからインストール (開発・自己修正用)
@@ -69,7 +69,7 @@ pi install https://github.com/KayanoLiam/pi--antigravity
 リポジトリを手元にクローンしてインストールする場合：
 
 ```bash
-git clone https://github.com/KayanoLiam/pi--antigravity.git
+git clone https://github.com/akasakariko/pi--antigravity.git
 cd pi--antigravity
 pi install .
 ```
@@ -79,7 +79,7 @@ pi install .
 機能追加やバグ修正を取り込むには以下を実行します：
 
 ```bash
-pi update git:github.com/KayanoLiam/pi--antigravity
+pi update git:github.com/akasakariko/pi--antigravity
 ```
 
 インストールまたは更新後は、Pi 内で `/reload` を実行するか、Pi を再起動してください。
@@ -113,16 +113,14 @@ pi update git:github.com/KayanoLiam/pi--antigravity
 
 本拡張機能は、Antigravity バックエンドカタログ（`agy models`）に対応する以下のモデル ID を提供しています：
 
-| 公開モデル ID       | 入力           | 対応思考レベル    | 最大出力トークン | 実際のルーティング先                                                                                   |
-| ------------------- | -------------- | ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------ |
-| `gemini-3.8-flash`  | テキスト、画像 | Low, Medium, High | 65,536           | low → `gemini-3.8-flash-low`<br>medium → `gemini-3.8-flash-medium`<br>high → `gemini-3.8-flash-high`   |
-| `gemini-3.7-flash`  | テキスト、画像 | Low, Medium, High | 65,536           | low → `gemini-3.7-flash-low`<br>medium → `gemini-3.7-flash-medium`<br>high → `gemini-3.7-flash-high`   |
-| `gemini-3.6-flash`  | テキスト、画像 | Low, Medium, High | 65,536           | low → `gemini-3.6-flash-low`<br>medium → `gemini-3.6-flash-medium`<br>high → `gemini-3.6-flash-high`   |
-| `gemini-3.5-flash`  | テキスト、画像 | Low, Medium, High | 65,536           | low → `gemini-3.5-flash-extra-low`<br>medium → `gemini-3.5-flash-low`<br>high → `gemini-3-flash-agent` |
-| `gemini-3.1-pro`    | テキスト、画像 | Low, High         | 65,535           | low → `gemini-3.1-pro-low`<br>high → `gemini-pro-agent`                                                |
-| `claude-sonnet-4-6` | テキスト、画像 | High              | 64,000           | high → `claude-sonnet-4-6`                                                                             |
-| `claude-opus-4-6`   | テキスト、画像 | High              | 64,000           | high → `claude-opus-4-6-thinking`                                                                      |
-| `gpt-oss-120b`      | テキスト       | Medium            | 32,768           | medium → `gpt-oss-120b-medium`                                                                         |
+| 公開モデル ID       | 入力           | 対応思考レベル    | 最大出力トークン | 実際のルーティング先                                                                                 |
+| ------------------- | -------------- | ----------------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
+| `gemini-3.8-flash`  | テキスト、画像 | Low, Medium, High | 65,536           | low → `gemini-3.8-flash-low`<br>medium → `gemini-3.8-flash-medium`<br>high → `gemini-3.8-flash-high` |
+| `claude-sonnet-4-6` | テキスト、画像 | High              | 64,000           | high → `claude-sonnet-4-6`                                                                           |
+| `claude-opus-4-6`   | テキスト、画像 | High              | 64,000           | high → `claude-opus-4-6-thinking`                                                                    |
+| `gpt-oss-120b`      | テキスト       | Medium            | 32,768           | medium → `gpt-oss-120b-medium`                                                                       |
+
+> **後方互換性エイリアス:** Google バックエンドで退役（404 または停止）となった旧モデル（`gemini-3.7-flash`、`gemini-3.6-flash`、`gemini-3.5-flash`、`gemini-3.1-pro`）は、既存設定の破損を防ぐため自動的に `gemini-3.8-flash` の対応思考レベルへ安全にエイリアスルーティングされます。
 
 ### 設定ファイル例 (`~/.pi/agent/settings.json`)
 
