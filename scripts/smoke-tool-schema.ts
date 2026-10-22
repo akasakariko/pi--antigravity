@@ -46,8 +46,8 @@ const modelCases = [
   { label: "Gemini 3.8 Flash (Low)", modelId: "gemini-3.8-flash", effort: "low" },
   { label: "Gemini 3.8 Flash (Medium)", modelId: "gemini-3.8-flash", effort: "medium" },
   { label: "Gemini 3.8 Flash (High)", modelId: "gemini-3.8-flash", effort: "high" },
-  { label: "Claude Sonnet 4.6 (Thinking)", modelId: "claude-sonnet-4-6", effort: "high" },
-  { label: "Claude Opus 4.6 (Thinking)", modelId: "claude-opus-4-6", effort: "high" },
+  { label: "Claude Sonnet 5.5 (High)", modelId: "claude-sonnet-5-5", effort: "high" },
+  { label: "Claude Opus 5.5 (High)", modelId: "claude-opus-5-5", effort: "high" },
   { label: "GPT-OSS 120B (Medium)", modelId: "gpt-oss-120b", effort: "high" },
   { label: "Gemini 3.7 Flash Legacy Alias (Medium)", modelId: "gemini-3.7-flash", effort: "medium" },
 ] as const;

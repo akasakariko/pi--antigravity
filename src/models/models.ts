@@ -5,42 +5,42 @@ import { ThinkingEffort } from "../types/enums.js";
 export const PROVIDER_ID = "antigravity";
 export const PROVIDER_NAME = "Antigravity";
 
+/** Claude 5.5 exposes one runtime ID per thinking level and has no non-thinking tier. */
+function claude55Routing(modelId: string): AntigravityRouting {
+  return {
+    off: `${modelId}-low`,
+    routing: {
+      minimal: `${modelId}-low`,
+      low: `${modelId}-low`,
+      medium: `${modelId}-medium`,
+      high: `${modelId}-high`,
+      xhigh: `${modelId}-high`,
+    },
+    defaultRequestId: `${modelId}-low`,
+  };
+}
+
 /**
  * Public selectable model IDs → backend request model IDs by thinking effort.
  *
  * Catalog mirrors current `agy models` (Antigravity CLI), which advertises:
  * - Gemini 3.8 Flash (Low / Medium / High)
- * - Claude Sonnet 4.6 (Thinking)
- * - Claude Opus 4.6 (Thinking)
+ * - Claude Opus 5.5 (Low / Medium / High)
+ * - Claude Sonnet 5.5 (Low / Medium / High)
  * - GPT-OSS 120B (Medium)
  *
- * Deprecated generations (Gemini 3.7 / 3.6 / 3.5 Flash, Gemini 3.1 Pro) have been
- * retired by the Google Cloud Code Assist backend (returning 404 / shut down).
- * They are preserved in ANTIGRAVITY_ROUTING as backward-compatibility aliases
- * routing to Gemini 3.8 Flash so legacy saved configurations continue to operate.
+ * `agy models` also lists Gemini 4 Argon, but Cloud Code Assist answers 404
+ * (Requested entity was not found) for it and no signed-in account exposes it in
+ * `fetchAvailableModels`, so it is intentionally not selectable here.
+ *
+ * Deprecated generations (Gemini 3.7 / 3.6 / 3.5 Flash, Gemini 3.1 Pro, Claude 4.6) have
+ * been retired by the Google Cloud Code Assist backend (404 or notice-only answers).
+ * They are preserved in ANTIGRAVITY_ROUTING as backward-compatibility aliases so
+ * legacy saved configurations continue to operate.
  */
 export const ANTIGRAVITY_ROUTING: Record<string, AntigravityRouting> = {
-  "claude-opus-4-6": {
-    routing: {
-      minimal: "claude-opus-4-6-thinking",
-      low: "claude-opus-4-6-thinking",
-      medium: "claude-opus-4-6-thinking",
-      high: "claude-opus-4-6-thinking",
-    },
-    defaultRequestId: "claude-opus-4-6-thinking",
-  },
-  // Live fetchAvailableModels exposes `claude-sonnet-4-6` (display: Thinking), not a separate *-thinking id.
-  "claude-sonnet-4-6": {
-    off: "claude-sonnet-4-6",
-    routing: {
-      minimal: "claude-sonnet-4-6",
-      low: "claude-sonnet-4-6",
-      medium: "claude-sonnet-4-6",
-      high: "claude-sonnet-4-6",
-      xhigh: "claude-sonnet-4-6",
-    },
-    defaultRequestId: "claude-sonnet-4-6",
-  },
+  "claude-opus-5-5": claude55Routing("claude-opus-5-5"),
+  "claude-sonnet-5-5": claude55Routing("claude-sonnet-5-5"),
   "gemini-3.8-flash": {
     off: "gemini-3.8-flash-low",
     routing: {
@@ -63,8 +63,11 @@ export const ANTIGRAVITY_ROUTING: Record<string, AntigravityRouting> = {
     defaultRequestId: "gpt-oss-120b-medium",
   },
   // --- Backward-compatibility aliases for retired models ---
-  // The backend returns 404 for Gemini 3.7 / 3.6 / 3.1 and shut down 3.5.
-  // Seamlessly map them to Gemini 3.8 Flash variants.
+  // The backend rejects Gemini 3.7 / 3.6 / 3.1 with 404, answers Gemini 3.5 only with a
+  // "no longer available" notice, and answers Claude 4.6 with "[model] is no longer
+  // available. Please switch to ... 5.5". Map them onto the current generations.
+  "claude-opus-4-6": claude55Routing("claude-opus-5-5"),
+  "claude-sonnet-4-6": claude55Routing("claude-sonnet-5-5"),
   "gemini-3.7-flash": {
     off: "gemini-3.8-flash-low",
     routing: {
@@ -138,6 +141,14 @@ export const RUNTIME_MAX_OUTPUT_TOKENS: Record<string, number> = {
   "gemini-3.1-pro-low": 65535,
   "gemini-3.1-pro-high": 65535,
   "gemini-pro-agent": 65535,
+  "claude-opus-5-5": 128000,
+  "claude-opus-5-5-low": 128000,
+  "claude-opus-5-5-medium": 128000,
+  "claude-opus-5-5-high": 128000,
+  "claude-sonnet-5-5": 128000,
+  "claude-sonnet-5-5-low": 128000,
+  "claude-sonnet-5-5-medium": 128000,
+  "claude-sonnet-5-5-high": 128000,
   "claude-opus-4-6": 64000,
   "claude-opus-4-6-thinking": 64000,
   "claude-sonnet-4-6": 64000,
@@ -153,7 +164,7 @@ export function getMaxOutputTokens(modelId: string, runtimeModel?: string): numb
     return RUNTIME_MAX_OUTPUT_TOKENS[modelId];
   }
   if (runtimeModel) {
-    if (runtimeModel.startsWith("claude-")) return 64000;
+    if (runtimeModel.startsWith("claude-")) return 128000;
     if (runtimeModel.startsWith("gpt-oss-")) return 32768;
     if (runtimeModel.startsWith("gemini-3.1-pro") || runtimeModel === "gemini-pro-agent")
       return 65535;
@@ -163,8 +174,8 @@ export function getMaxOutputTokens(modelId: string, runtimeModel?: string): numb
 }
 
 const geminiFlashCost = { input: 0.1, output: 0.4, cacheRead: 0.025, cacheWrite: 0.1 };
-const claudeSonnetCost = { input: 3.0, output: 15.0, cacheRead: 0.3, cacheWrite: 3.75 };
-const claudeOpusCost = { input: 15.0, output: 75.0, cacheRead: 1.5, cacheWrite: 18.75 };
+const claudeSonnetCost = { input: 2.0, output: 10.0, cacheRead: 0.1, cacheWrite: 2.5 };
+const claudeOpusCost = { input: 4.0, output: 20.0, cacheRead: 0.2, cacheWrite: 5.0 };
 const gptOssCost = { input: 0.6, output: 2.4, cacheRead: 0.15, cacheWrite: 0.6 };
 
 // A null entry is intentionally hidden by Pi. Do not collapse levels that happen to
@@ -215,24 +226,24 @@ export const ANTIGRAVITY_MODELS: ProviderModelConfig[] = [
     maxTokens: 65536,
   },
   {
-    id: "claude-sonnet-4-6",
-    name: "Claude Sonnet 4.6 (Antigravity)",
+    id: "claude-opus-5-5",
+    name: "Claude Opus 5.5 (Antigravity)",
     reasoning: true,
-    thinkingLevelMap: thinkingLevelMaps.thinking,
-    input: ["text", "image"],
-    cost: claudeSonnetCost,
-    contextWindow: 200000,
-    maxTokens: 64000,
-  },
-  {
-    id: "claude-opus-4-6",
-    name: "Claude Opus 4.6 (Antigravity)",
-    reasoning: true,
-    thinkingLevelMap: thinkingLevelMaps.thinking,
+    thinkingLevelMap: thinkingLevelMaps.lowMediumHigh,
     input: ["text", "image"],
     cost: claudeOpusCost,
-    contextWindow: 250000,
-    maxTokens: 64000,
+    contextWindow: 1000000,
+    maxTokens: 128000,
+  },
+  {
+    id: "claude-sonnet-5-5",
+    name: "Claude Sonnet 5.5 (Antigravity)",
+    reasoning: true,
+    thinkingLevelMap: thinkingLevelMaps.lowMediumHigh,
+    input: ["text", "image"],
+    cost: claudeSonnetCost,
+    contextWindow: 1000000,
+    maxTokens: 128000,
   },
   {
     id: "gpt-oss-120b",
@@ -313,10 +324,16 @@ export const ANTIGRAVITY_MODEL_ENUM: Record<string, string> = {
   "gemini-3.8-flash-medium": "MODEL_PLACEHOLDER_M319",
   "gemini-3.8-flash-low": "MODEL_PLACEHOLDER_M320",
   "gemini-3.8-flash-tiered": "MODEL_PLACEHOLDER_M322",
-  "claude-sonnet-4-6": "MODEL_PLACEHOLDER_M35",
-  "claude-opus-4-6-thinking": "MODEL_PLACEHOLDER_M26",
+  "claude-opus-5-5-low": "MODEL_PLACEHOLDER_M400",
+  "claude-opus-5-5-medium": "MODEL_PLACEHOLDER_M401",
+  "claude-opus-5-5-high": "MODEL_PLACEHOLDER_M402",
+  "claude-sonnet-5-5-low": "MODEL_PLACEHOLDER_M403",
+  "claude-sonnet-5-5-medium": "MODEL_PLACEHOLDER_M404",
+  "claude-sonnet-5-5-high": "MODEL_PLACEHOLDER_M405",
   "gpt-oss-120b-medium": "MODEL_OPENAI_GPT_OSS_120B_MEDIUM",
   // Legacy mappings retained for reference
+  "claude-sonnet-4-6": "MODEL_PLACEHOLDER_M35",
+  "claude-opus-4-6-thinking": "MODEL_PLACEHOLDER_M26",
   "gemini-3.5-flash-extra-low": "MODEL_PLACEHOLDER_M187",
   "gemini-3.5-flash-low": "MODEL_PLACEHOLDER_M20",
   "gemini-3-flash-agent": "MODEL_PLACEHOLDER_M84",

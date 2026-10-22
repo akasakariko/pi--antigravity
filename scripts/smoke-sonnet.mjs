@@ -13,7 +13,7 @@ const refreshed = await authMod.refreshAntigravityToken({
   email: creds.email,
 });
 
-const runtimeModel = models.getAntigravityRequestModelId("claude-sonnet-4-6", "off");
+const runtimeModel = models.getAntigravityRequestModelId("claude-sonnet-5-5", "high");
 console.log("runtimeModel=", runtimeModel);
 
 const body = {

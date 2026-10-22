@@ -113,14 +113,16 @@ pi update git:github.com/akasakariko/pi--antigravity
 
 本拡張機能は、Antigravity バックエンドカタログ（`agy models`）に対応する以下のモデル ID を提供しています：
 
-| 公開モデル ID       | 入力           | 対応思考レベル    | 最大出力トークン | 実際のルーティング先                                                                                 |
-| ------------------- | -------------- | ----------------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
-| `gemini-3.8-flash`  | テキスト、画像 | Low, Medium, High | 65,536           | low → `gemini-3.8-flash-low`<br>medium → `gemini-3.8-flash-medium`<br>high → `gemini-3.8-flash-high` |
-| `claude-sonnet-4-6` | テキスト、画像 | High              | 64,000           | high → `claude-sonnet-4-6`                                                                           |
-| `claude-opus-4-6`   | テキスト、画像 | High              | 64,000           | high → `claude-opus-4-6-thinking`                                                                    |
-| `gpt-oss-120b`      | テキスト       | Medium            | 32,768           | medium → `gpt-oss-120b-medium`                                                                       |
+| 公開モデル ID       | 入力           | 対応思考レベル    | 最大出力トークン | 実際のルーティング先                                                                                    |
+| ------------------- | -------------- | ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------- |
+| `gemini-3.8-flash`  | テキスト、画像 | Low, Medium, High | 65,536           | low → `gemini-3.8-flash-low`<br>medium → `gemini-3.8-flash-medium`<br>high → `gemini-3.8-flash-high`    |
+| `claude-opus-5-5`   | テキスト、画像 | Low, Medium, High | 128,000          | low → `claude-opus-5-5-low`<br>medium → `claude-opus-5-5-medium`<br>high → `claude-opus-5-5-high`       |
+| `claude-sonnet-5-5` | テキスト、画像 | Low, Medium, High | 128,000          | low → `claude-sonnet-5-5-low`<br>medium → `claude-sonnet-5-5-medium`<br>high → `claude-sonnet-5-5-high` |
+| `gpt-oss-120b`      | テキスト       | Medium            | 32,768           | medium → `gpt-oss-120b-medium`                                                                          |
 
-> **後方互換性エイリアス:** Google バックエンドで退役（404 または停止）となった旧モデル（`gemini-3.7-flash`、`gemini-3.6-flash`、`gemini-3.5-flash`、`gemini-3.1-pro`）は、既存設定の破損を防ぐため自動的に `gemini-3.8-flash` の対応思考レベルへ安全にエイリアスルーティングされます。
+> **後方互換性エイリアス:** Google バックエンドで退役（404 または停止通知）となった旧モデル（`gemini-3.7-flash`、`gemini-3.6-flash`、`gemini-3.5-flash`、`gemini-3.1-pro`）は `gemini-3.8-flash` の対応思考レベルへ、Claude 4.6（`claude-opus-4-6`、`claude-sonnet-4-6`）は Claude 5.5 の対応思考レベルへ、既存設定の破損を防ぐため自動的にルーティングされます。
+
+> **Gemini 4 Argon について:** `agy models` には `gemini-4-argon` が表示されますが、Cloud Code Assist は該当アカウントで 404（`Requested entity was not found`）を返し、`fetchAvailableModels` にも現れないため、本拡張機能では選択肢に含めていません。
 
 ### 設定ファイル例 (`~/.pi/agent/settings.json`)
 
@@ -134,7 +136,7 @@ pi update git:github.com/akasakariko/pi--antigravity
     "antigravity/gemini-3.8-flash": { "enabled": true },
     "antigravity/gemini-3.7-flash": { "enabled": true },
     "antigravity/gemini-3.1-pro": { "enabled": true },
-    "antigravity/claude-sonnet-4-6": { "enabled": true }
+    "antigravity/claude-sonnet-5-5": { "enabled": true }
   }
 }
 ```

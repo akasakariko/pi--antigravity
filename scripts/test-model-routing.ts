@@ -65,8 +65,14 @@ const routeCases: Array<[string, string | undefined, string]> = [
   ["gemini-3.5-flash", "high", "gemini-3.8-flash-high"],
   ["gemini-3.1-pro", "medium", "gemini-3.8-flash-medium"],
   ["gemini-3.1-pro", "high", "gemini-3.8-flash-high"],
-  ["claude-sonnet-4-6", "xhigh", "claude-sonnet-4-6"],
-  ["claude-opus-4-6", "high", "claude-opus-4-6-thinking"],
+  ["claude-opus-5-5", undefined, "claude-opus-5-5-low"],
+  ["claude-opus-5-5", "low", "claude-opus-5-5-low"],
+  ["claude-opus-5-5", "medium", "claude-opus-5-5-medium"],
+  ["claude-opus-5-5", "xhigh", "claude-opus-5-5-high"],
+  ["claude-sonnet-5-5", "high", "claude-sonnet-5-5-high"],
+  // Retired Claude 4.6 ids alias onto the 5.5 tiers
+  ["claude-sonnet-4-6", "xhigh", "claude-sonnet-5-5-high"],
+  ["claude-opus-4-6", "high", "claude-opus-5-5-high"],
   ["gpt-oss-120b", "high", "gpt-oss-120b-medium"],
   ["unknown-model", "high", "unknown-model"],
 ];
@@ -78,8 +84,8 @@ for (const [model, effort, expected] of routeCases) {
 const modelIds = new Set(ANTIGRAVITY_MODELS.map((model) => model.id));
 const expectedModels = [
   "gemini-3.8-flash",
-  "claude-sonnet-4-6",
-  "claude-opus-4-6",
+  "claude-opus-5-5",
+  "claude-sonnet-5-5",
   "gpt-oss-120b",
 ];
 assert.equal(
@@ -97,8 +103,8 @@ const expectedThinkingLevels: Record<string, string[]> = {
   "gemini-3.6-flash": ["low", "medium", "high"],
   "gemini-3.5-flash": ["low", "medium", "high"],
   "gemini-3.1-pro": ["low", "high"],
-  "claude-opus-4-6": ["high"],
-  "claude-sonnet-4-6": ["high"],
+  "claude-opus-5-5": ["low", "medium", "high"],
+  "claude-sonnet-5-5": ["low", "medium", "high"],
   "gpt-oss-120b": ["medium"],
 };
 for (const configuredModel of ANTIGRAVITY_MODELS) {
@@ -389,7 +395,8 @@ assert.equal(getMaxOutputTokens("gemini-3.8-flash", "gemini-3.8-flash-low"), 655
 assert.equal(getMaxOutputTokens("gemini-3.7-flash", "gemini-3.7-flash-tiered"), 65536);
 assert.equal(getMaxOutputTokens("gemini-3.6-flash", "gemini-3.6-flash-low"), 65536);
 assert.equal(getMaxOutputTokens("gemini-3.1-pro", "gemini-3.1-pro-low"), 65535);
-assert.equal(getMaxOutputTokens("claude-sonnet-4-6", "claude-sonnet-4-6"), 64000);
+assert.equal(getMaxOutputTokens("claude-sonnet-5-5", "claude-sonnet-5-5-medium"), 128000);
+assert.equal(getMaxOutputTokens("claude-opus-5-5", "claude-opus-5-5-high"), 128000);
 assert.equal(getMaxOutputTokens("gpt-oss-120b", "gpt-oss-120b-medium"), 32768);
 
 // Test fallback runtime models
@@ -749,9 +756,12 @@ assert.equal(
 const flashCost = ANTIGRAVITY_MODELS.find((m) => m.id === "gemini-3.8-flash")?.cost;
 assert.equal(flashCost?.input, 0.1);
 assert.equal(flashCost?.output, 0.4);
-const opusCost = ANTIGRAVITY_MODELS.find((m) => m.id === "claude-opus-4-6")?.cost;
-assert.equal(opusCost?.input, 15);
-assert.equal(opusCost?.output, 75);
+const opusCost = ANTIGRAVITY_MODELS.find((m) => m.id === "claude-opus-5-5")?.cost;
+assert.equal(opusCost?.input, 4);
+assert.equal(opusCost?.output, 20);
+const sonnetCost = ANTIGRAVITY_MODELS.find((m) => m.id === "claude-sonnet-5-5")?.cost;
+assert.equal(sonnetCost?.input, 2);
+assert.equal(sonnetCost?.output, 10);
 
 console.log(
   `model routing: ${routeCases.length} cases, tool schema, errors, project ids, token clamping, and message conversion passed`,

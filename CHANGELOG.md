@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.2] - 2026-10-23
+
+### Changed
+
+- **Model catalog refresh:** Active catalog now matches `agy models` for Claude. `claude-opus-5-5` and `claude-sonnet-5-5` replace the retired 4.6 generation and expose Low / Medium / High with per-effort runtime IDs (`claude-opus-5-5-low|medium|high`)
+- **Claude 5.5 limits:** Context window 1,000,000 and max output 128,000 tokens, verified against the backend ceiling
+- **Claude 5.5 pricing:** Standard API-equivalent rates updated to Opus 5.5 ($4/$20) and Sonnet 5.5 ($2/$10)
+- **Claude 4.6 compatibility aliases:** `claude-opus-4-6` and `claude-sonnet-4-6` route to the matching 5.5 tiers instead of returning the backend's "no longer available" notice
+
 ## [0.6.1] - 2026-10-13
 
 ### Changed
