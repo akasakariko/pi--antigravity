@@ -24,14 +24,15 @@ function claude55Routing(modelId: string): AntigravityRouting {
  * Public selectable model IDs → backend request model IDs by thinking effort.
  *
  * Catalog mirrors current `agy models` (Antigravity CLI), which advertises:
+ * - Gemini 4 Argon (Low / Medium / High)
  * - Gemini 3.8 Flash (Low / Medium / High)
  * - Claude Opus 5.5 (Low / Medium / High)
  * - Claude Sonnet 5.5 (Low / Medium / High)
  * - GPT-OSS 120B (Medium)
  *
- * `agy models` also lists Gemini 4 Argon, but Cloud Code Assist answers 404
- * (Requested entity was not found) for it and no signed-in account exposes it in
- * `fetchAvailableModels`, so it is intentionally not selectable here.
+ * Gemini 4 Argon is absent from `fetchAvailableModels` and is gated by the client
+ * build id: User-Agents below DEFAULT_ANTIGRAVITY_CL get 404 (Requested entity was
+ * not found) for it, while current `agy` build ids route it.
  *
  * Deprecated generations (Gemini 3.7 / 3.6 / 3.5 Flash, Gemini 3.1 Pro, Claude 4.6) have
  * been retired by the Google Cloud Code Assist backend (404 or notice-only answers).
@@ -41,6 +42,17 @@ function claude55Routing(modelId: string): AntigravityRouting {
 export const ANTIGRAVITY_ROUTING: Record<string, AntigravityRouting> = {
   "claude-opus-5-5": claude55Routing("claude-opus-5-5"),
   "claude-sonnet-5-5": claude55Routing("claude-sonnet-5-5"),
+  "gemini-4-argon": {
+    off: "gemini-4-argon-low",
+    routing: {
+      minimal: "gemini-4-argon-low",
+      low: "gemini-4-argon-low",
+      medium: "gemini-4-argon-medium",
+      high: "gemini-4-argon-high",
+      xhigh: "gemini-4-argon-high",
+    },
+    defaultRequestId: "gemini-4-argon-low",
+  },
   "gemini-3.8-flash": {
     off: "gemini-3.8-flash-low",
     routing: {
@@ -119,6 +131,9 @@ export const ANTIGRAVITY_ROUTING: Record<string, AntigravityRouting> = {
  * Requesting more than these limits returns a 400 Bad Request from the API.
  */
 export const RUNTIME_MAX_OUTPUT_TOKENS: Record<string, number> = {
+  "gemini-4-argon-low": 65536,
+  "gemini-4-argon-medium": 65536,
+  "gemini-4-argon-high": 65536,
   "gemini-3.8-flash": 65536,
   "gemini-3.8-flash-tiered": 65536,
   "gemini-3.8-flash-low": 65536,
@@ -173,6 +188,7 @@ export function getMaxOutputTokens(modelId: string, runtimeModel?: string): numb
   return 8192;
 }
 
+const geminiArgonCost = { input: 2.0, output: 10.0, cacheRead: 0.1, cacheWrite: 0 };
 const geminiFlashCost = { input: 0.1, output: 0.4, cacheRead: 0.025, cacheWrite: 0.1 };
 const claudeSonnetCost = { input: 2.0, output: 10.0, cacheRead: 0.1, cacheWrite: 2.5 };
 const claudeOpusCost = { input: 4.0, output: 20.0, cacheRead: 0.2, cacheWrite: 5.0 };
@@ -215,6 +231,16 @@ const thinkingLevelMaps = {
 
 /** Active selectable models matching `agy models`. */
 export const ANTIGRAVITY_MODELS: ProviderModelConfig[] = [
+  {
+    id: "gemini-4-argon",
+    name: "Gemini 4 Argon (Antigravity)",
+    reasoning: true,
+    thinkingLevelMap: thinkingLevelMaps.lowMediumHigh,
+    input: ["text", "image"],
+    cost: geminiArgonCost,
+    contextWindow: 1048576,
+    maxTokens: 65536,
+  },
   {
     id: "gemini-3.8-flash",
     name: "Gemini 3.8 Flash (Antigravity)",
@@ -320,6 +346,9 @@ export type ThinkingWire = {
 };
 
 export const ANTIGRAVITY_MODEL_ENUM: Record<string, string> = {
+  "gemini-4-argon-high": "MODEL_PLACEHOLDER_M417",
+  "gemini-4-argon-medium": "MODEL_PLACEHOLDER_M418",
+  "gemini-4-argon-low": "MODEL_PLACEHOLDER_M419",
   "gemini-3.8-flash-high": "MODEL_PLACEHOLDER_M318",
   "gemini-3.8-flash-medium": "MODEL_PLACEHOLDER_M319",
   "gemini-3.8-flash-low": "MODEL_PLACEHOLDER_M320",
@@ -352,6 +381,7 @@ export function getThinkingConfig(
   effort: string | undefined,
 ): ThinkingWire | undefined {
   if (
+    modelId === "gemini-4-argon" ||
     modelId === "gemini-3.8-flash" ||
     modelId === "gemini-3.7-flash" ||
     modelId === "gemini-3.6-flash"

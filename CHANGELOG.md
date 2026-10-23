@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.3] - 2026-10-23
+
+### Added
+
+- **Gemini 4 Argon:** `gemini-4-argon` is selectable with Low / Medium / High tiers routed to `gemini-4-argon-low|medium|high`
+
+### Fixed
+
+- **Client build id:** The User-Agent now advertises build id `1004422050` (the `agy` 1.4.5 value). The previous id `963137146` made Cloud Code Assist answer 404 `Requested entity was not found` for Gemini 4 Argon on accounts that are entitled to it
+
 ## [0.6.2] - 2026-10-23
 
 ### Changed

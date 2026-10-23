@@ -115,6 +115,7 @@ pi update git:github.com/akasakariko/pi--antigravity
 
 | 公開モデル ID       | 入力           | 対応思考レベル    | 最大出力トークン | 実際のルーティング先                                                                                    |
 | ------------------- | -------------- | ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------- |
+| `gemini-4-argon`    | テキスト、画像 | Low, Medium, High | 65,536           | low → `gemini-4-argon-low`<br>medium → `gemini-4-argon-medium`<br>high → `gemini-4-argon-high`          |
 | `gemini-3.8-flash`  | テキスト、画像 | Low, Medium, High | 65,536           | low → `gemini-3.8-flash-low`<br>medium → `gemini-3.8-flash-medium`<br>high → `gemini-3.8-flash-high`    |
 | `claude-opus-5-5`   | テキスト、画像 | Low, Medium, High | 128,000          | low → `claude-opus-5-5-low`<br>medium → `claude-opus-5-5-medium`<br>high → `claude-opus-5-5-high`       |
 | `claude-sonnet-5-5` | テキスト、画像 | Low, Medium, High | 128,000          | low → `claude-sonnet-5-5-low`<br>medium → `claude-sonnet-5-5-medium`<br>high → `claude-sonnet-5-5-high` |
@@ -122,7 +123,7 @@ pi update git:github.com/akasakariko/pi--antigravity
 
 > **後方互換性エイリアス:** Google バックエンドで退役（404 または停止通知）となった旧モデル（`gemini-3.7-flash`、`gemini-3.6-flash`、`gemini-3.5-flash`、`gemini-3.1-pro`）は `gemini-3.8-flash` の対応思考レベルへ、Claude 4.6（`claude-opus-4-6`、`claude-sonnet-4-6`）は Claude 5.5 の対応思考レベルへ、既存設定の破損を防ぐため自動的にルーティングされます。
 
-> **Gemini 4 Argon について:** `agy models` には `gemini-4-argon` が表示されますが、Cloud Code Assist は該当アカウントで 404（`Requested entity was not found`）を返し、`fetchAvailableModels` にも現れないため、本拡張機能では選択肢に含めていません。
+> **Gemini 4 Argon について:** `gemini-4-argon` は `fetchAvailableModels` には現れず、User-Agent のクライアントビルド ID で制御されています。旧ビルド ID（`cl=963137146`）では 404（`Requested entity was not found`）になりますが、本拡張機能は `cl=1004422050`（`agy` 1.4.5 相当）を送信するため利用できます。`AGY_CL` 相当の値は環境変数 `ANTIGRAVITY_HUB_CL` で上書きできます。
 
 ### 設定ファイル例 (`~/.pi/agent/settings.json`)
 

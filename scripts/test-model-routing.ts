@@ -42,6 +42,10 @@ const assert = {
 const route = (model: string, effort?: string) => getAntigravityRequestModelId(model, effort);
 
 const routeCases: Array<[string, string | undefined, string]> = [
+  ["gemini-4-argon", undefined, "gemini-4-argon-low"],
+  ["gemini-4-argon", "low", "gemini-4-argon-low"],
+  ["gemini-4-argon", "medium", "gemini-4-argon-medium"],
+  ["gemini-4-argon", "xhigh", "gemini-4-argon-high"],
   ["gemini-3.8-flash", undefined, "gemini-3.8-flash-low"],
   ["gemini-3.8-flash", "off", "gemini-3.8-flash-low"],
   ["gemini-3.8-flash", "minimal", "gemini-3.8-flash-low"],
@@ -83,6 +87,7 @@ for (const [model, effort, expected] of routeCases) {
 
 const modelIds = new Set(ANTIGRAVITY_MODELS.map((model) => model.id));
 const expectedModels = [
+  "gemini-4-argon",
   "gemini-3.8-flash",
   "claude-opus-5-5",
   "claude-sonnet-5-5",
@@ -98,6 +103,7 @@ for (const expected of expectedModels) {
 }
 
 const expectedThinkingLevels: Record<string, string[]> = {
+  "gemini-4-argon": ["low", "medium", "high"],
   "gemini-3.8-flash": ["low", "medium", "high"],
   "gemini-3.7-flash": ["low", "medium", "high"],
   "gemini-3.6-flash": ["low", "medium", "high"],
@@ -390,6 +396,7 @@ assert.equal(imgPart.inlineData.data, "/9j/4AAQSkZJRg==");
 assert.equal(imgPart.inlineData.mimeType, "image/jpeg");
 
 // Test max output token limits per runtime model
+assert.equal(getMaxOutputTokens("gemini-4-argon", "gemini-4-argon-medium"), 65536);
 assert.equal(getMaxOutputTokens("gemini-3.8-flash", "gemini-3.8-flash-tiered"), 65536);
 assert.equal(getMaxOutputTokens("gemini-3.8-flash", "gemini-3.8-flash-low"), 65536);
 assert.equal(getMaxOutputTokens("gemini-3.7-flash", "gemini-3.7-flash-tiered"), 65536);
@@ -451,7 +458,12 @@ const reqD = buildRequest(
 );
 assert.equal(reqD.request.generationConfig?.maxOutputTokens, 65535);
 
-// Case E: Gemini 3.8/3.7/3.6 send thinkingLevel; 3.5 sends thinkingBudget.
+// Case E: Gemini 4 Argon / 3.8 / 3.7 / 3.6 send thinkingLevel; 3.5 sends thinkingBudget.
+const argonModel = { ...model, id: "gemini-4-argon", maxTokens: 65536 };
+const argonRequest = buildRequest(argonModel, dummyContext, "test-proj", { reasoning: "medium" }, "gemini-4-argon-medium");
+assert.equal(argonRequest.request.generationConfig?.thinkingConfig?.thinkingLevel, "MEDIUM");
+assert.equal(argonRequest.request.generationConfig?.thinkingConfig?.includeThoughts, true);
+
 const flash38Model = { ...model, id: "gemini-3.8-flash", maxTokens: 65536 };
 for (const [reasoning, thinkingLevel, runtime] of [
   ["low", "LOW", "gemini-3.8-flash-low"],

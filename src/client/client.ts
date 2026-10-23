@@ -61,7 +61,12 @@ export function endpointCandidates(): string[] {
 }
 
 const DEFAULT_ANTIGRAVITY_VERSION = "2.8.0";
-const DEFAULT_ANTIGRAVITY_CL = "963137146";
+/**
+ * Client build id advertised in the User-Agent. Cloud Code Assist gates newer models on
+ * it: build id 963137146 still gets 404 for gemini-4-argon-*, while 1004422050 (agy
+ * 1.4.5) routes them. Bump it when newer models stop resolving.
+ */
+const DEFAULT_ANTIGRAVITY_CL = "1004422050";
 
 function defaultUserAgent(): string {
   const version = antigravityEnv("HUB_VERSION") || DEFAULT_ANTIGRAVITY_VERSION;
